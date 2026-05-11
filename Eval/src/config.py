@@ -19,15 +19,15 @@ load_dotenv(EVAL_ROOT / ".env")
 # Azure OpenAI connection
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21")
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
 
 # Deployment names — set in Foundry / Azure OpenAI portal
 CLASSIFIER_DEPLOYMENT = os.getenv("AZURE_OPENAI_CLASSIFIER_DEPLOYMENT", "gpt-5.4-nano")
 JUDGE_DEPLOYMENT = os.getenv("AZURE_OPENAI_JUDGE_DEPLOYMENT", "gpt-5.4")
 
-# Sampling parameters — low temperature for deterministic eval behavior
-CLASSIFIER_TEMPERATURE = 0.1
-JUDGE_TEMPERATURE = 0.0
+# gpt-5.4 family is a reasoning model: temperature is locked at default and
+# token budgets use max_completion_tokens (not max_tokens).
+MAX_COMPLETION_TOKENS = 4096
 
 # Filesystem paths
 SCENARIOS_DIR = EVAL_ROOT / "scenarios"

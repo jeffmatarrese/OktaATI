@@ -42,7 +42,7 @@ class LLMClient:
         user_content = json.dumps(scenario_payload, indent=2)
         resp = self._client.chat.completions.create(  # type: ignore[union-attr]
             model=config.CLASSIFIER_DEPLOYMENT,
-            temperature=config.CLASSIFIER_TEMPERATURE,
+            max_completion_tokens=config.MAX_COMPLETION_TOKENS,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -72,7 +72,7 @@ class LLMClient:
         )
         resp = self._client.chat.completions.create(  # type: ignore[union-attr]
             model=config.JUDGE_DEPLOYMENT,
-            temperature=config.JUDGE_TEMPERATURE,
+            max_completion_tokens=config.MAX_COMPLETION_TOKENS,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system_prompt},
