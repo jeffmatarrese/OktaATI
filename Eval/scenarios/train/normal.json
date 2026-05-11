@@ -428,6 +428,182 @@
       "events": [{"event_id": "evt_nt38_001", "timestamp": "2026-05-12T23:00:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS Cost Explorer"}, "auth_details": {"scopes_granted": ["ce:GetCostAndUsage"], "scope_delta": false}}],
       "cross_app_context": {"apps_accessed_last_24h": ["AWS Cost Explorer"], "total_auth_events_24h": 24, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
       "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["hourly cadence baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-39", "category": "normal",
+      "narrative": "Service desk auto-responder reads tickets and posts canned replies. Long baseline.",
+      "agent_profile": {"agent_id": "agent_servicedesk_autorespond_01", "registered_purpose": "Auto-respond to common ServiceNow tickets", "registration_date": "2025-01-04", "owner": "it-support@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt39_001", "timestamp": "2026-05-13T08:00:00Z", "event_type": "session_start", "target_app": {"app_name": "ServiceNow"}, "auth_details": {"scopes_granted": ["read:tickets", "write:comments"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["ServiceNow"], "total_auth_events_24h": 24, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["routine"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-40", "category": "normal",
+      "narrative": "Knowledge base agent indexes Notion pages nightly. Single app baseline.",
+      "agent_profile": {"agent_id": "agent_kb_indexer_01", "registered_purpose": "Index Notion knowledge base nightly", "registration_date": "2025-04-30", "owner": "knowledge-mgmt@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt40_001", "timestamp": "2026-05-13T05:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Notion"}, "auth_details": {"scopes_granted": ["read:pages"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Notion"], "total_auth_events_24h": 1, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["nightly cadence"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-41", "category": "normal",
+      "narrative": "Container vulnerability scanner reads ECR images. Daily run, baseline established.",
+      "agent_profile": {"agent_id": "agent_container_vuln_scan_01", "registered_purpose": "Scan container images for CVEs", "registration_date": "2024-10-18", "owner": "secops@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt41_001", "timestamp": "2026-05-13T06:00:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS ECR"}, "auth_details": {"scopes_granted": ["ecr:DescribeImages", "ecr:BatchGetImage"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS ECR"], "total_auth_events_24h": 3, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["daily baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-42", "category": "normal",
+      "narrative": "Sales commission calculator reads Salesforce + writes to internal calc DB. Two-app, monthly cycle.",
+      "agent_profile": {"agent_id": "agent_commission_calc_01", "registered_purpose": "Monthly sales commission calc", "registration_date": "2025-02-28", "owner": "finance-ops@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt42_001", "timestamp": "2026-05-31T18:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_granted": ["read:opportunities", "read:users"], "scope_delta": false}}, {"event_id": "evt_nt42_002", "timestamp": "2026-05-31T18:08:00Z", "event_type": "session_start", "target_app": {"app_name": "Internal Calc DB"}, "auth_details": {"scopes_granted": ["write:commissions"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Salesforce", "Internal Calc DB"], "total_auth_events_24h": 2, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["monthly cycle baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-43", "category": "normal",
+      "narrative": "Customer survey trigger agent sends NPS surveys post-ticket-close. Established Zendesk + Delighted baseline.",
+      "agent_profile": {"agent_id": "agent_nps_trigger_01", "registered_purpose": "Trigger NPS surveys after ticket close", "registration_date": "2025-05-12", "owner": "customer-success@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt43_001", "timestamp": "2026-05-13T16:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Zendesk"}, "auth_details": {"scopes_granted": ["read:tickets"], "scope_delta": false}}, {"event_id": "evt_nt43_002", "timestamp": "2026-05-13T16:01:00Z", "event_type": "session_start", "target_app": {"app_name": "Delighted"}, "auth_details": {"scopes_granted": ["write:surveys"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Zendesk", "Delighted"], "total_auth_events_24h": 8, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["two-app baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-44", "category": "normal",
+      "narrative": "Build artifact uploader writes to S3 from CircleCI. Single integration, established.",
+      "agent_profile": {"agent_id": "agent_artifact_uploader_01", "registered_purpose": "Upload build artifacts from CircleCI to S3", "registration_date": "2024-07-09", "owner": "developer-platform@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt44_001", "timestamp": "2026-05-13T19:00:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS S3"}, "auth_details": {"scopes_granted": ["s3:PutObject"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS S3"], "total_auth_events_24h": 12, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["established"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-45", "category": "normal",
+      "narrative": "Email-triage agent for executives reads Gmail labels. Long baseline, delegated read scope is purpose.",
+      "agent_profile": {"agent_id": "agent_exec_email_triage_01", "registered_purpose": "Triage exec inboxes for priority emails", "registration_date": "2024-11-20", "owner": "exec-ops@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt45_001", "timestamp": "2026-05-13T20:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Gmail"}, "auth_details": {"scopes_granted": ["gmail.metadata", "gmail.labels"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Gmail"], "total_auth_events_24h": 8, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.85, 0.95], "key_signals": ["delegated scope matches purpose"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-46", "category": "normal",
+      "narrative": "Test failure triager reads CircleCI build logs and posts to Slack. Two-app baseline.",
+      "agent_profile": {"agent_id": "agent_test_failure_triage_01", "registered_purpose": "Triage CircleCI failures and post to Slack #engineering", "registration_date": "2025-06-18", "owner": "qa-eng@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt46_001", "timestamp": "2026-05-13T21:00:00Z", "event_type": "session_start", "target_app": {"app_name": "CircleCI"}, "auth_details": {"scopes_granted": ["read:builds"], "scope_delta": false}}, {"event_id": "evt_nt46_002", "timestamp": "2026-05-13T21:01:00Z", "event_type": "session_start", "target_app": {"app_name": "Slack"}, "auth_details": {"scopes_granted": ["chat:write"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["CircleCI", "Slack"], "total_auth_events_24h": 18, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["two-app baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-47", "category": "normal",
+      "narrative": "Quarterly board reporting agent has 4x volume today — last day of Q1. Documented pattern.",
+      "agent_profile": {"agent_id": "agent_board_report_01", "registered_purpose": "Quarterly board materials prep from NetSuite and Salesforce", "registration_date": "2024-04-04", "owner": "finance-ops@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt47_001", "timestamp": "2026-03-31T15:00:00Z", "event_type": "session_start", "target_app": {"app_name": "NetSuite"}, "auth_details": {"scopes_granted": ["read:gl", "read:reports"], "scope_delta": false}}, {"event_id": "evt_nt47_002", "timestamp": "2026-03-31T15:30:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 12, "baseline_24h": 3}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["NetSuite", "Salesforce"], "total_auth_events_24h": 14, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0, "note": "Q1 close day."},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.7, 0.9], "key_signals": ["documented quarterly cycle"], "answer_rationale": "Cycle-aligned spike."}
+    },
+    {
+      "id": "N-T-48", "category": "normal",
+      "narrative": "Newly registered audit log forwarder establishes baseline. First run.",
+      "agent_profile": {"agent_id": "agent_audit_log_forward_01", "registered_purpose": "Forward audit logs from Auth0 to SIEM", "registration_date": "2026-05-10", "owner": "secops@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt48_001", "timestamp": "2026-05-13T22:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Auth0"}, "auth_details": {"scopes_granted": ["read:logs"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Auth0"], "total_auth_events_24h": 1, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 1},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.65, 0.88], "key_signals": ["new agent in registered app"], "answer_rationale": "New agent."}
+    },
+    {
+      "id": "N-T-49", "category": "normal",
+      "narrative": "DataBricks ML feature engineering job runs on weekend evenings. Established baseline.",
+      "agent_profile": {"agent_id": "agent_feature_eng_01", "registered_purpose": "Weekend feature engineering for ML models", "registration_date": "2025-03-15", "owner": "ml-platform@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt49_001", "timestamp": "2026-05-17T02:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Databricks"}, "auth_details": {"scopes_granted": ["read:notebooks", "write:tables"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Databricks"], "total_auth_events_24h": 1, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["weekend off-hours is baseline"], "answer_rationale": "Established schedule."}
+    },
+    {
+      "id": "N-T-50", "category": "normal",
+      "narrative": "Slack workflow integration runs short bursts every hour. High frequency is baseline.",
+      "agent_profile": {"agent_id": "agent_slack_workflow_01", "registered_purpose": "Process Slack workflow actions hourly", "registration_date": "2024-08-22", "owner": "internal-tools@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt50_001", "timestamp": "2026-05-13T22:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Slack"}, "auth_details": {"scopes_granted": ["chat:write", "workflow:read"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Slack"], "total_auth_events_24h": 36, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["high frequency is baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-51", "category": "normal",
+      "narrative": "Lead scoring agent reads marketing leads from HubSpot. Single-app, daily run.",
+      "agent_profile": {"agent_id": "agent_lead_scorer_01", "registered_purpose": "Daily lead scoring from HubSpot", "registration_date": "2025-06-22", "owner": "marketing-ops@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt51_001", "timestamp": "2026-05-13T23:00:00Z", "event_type": "session_start", "target_app": {"app_name": "HubSpot"}, "auth_details": {"scopes_granted": ["read:contacts", "write:lead_scores"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["HubSpot"], "total_auth_events_24h": 2, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["daily baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-52", "category": "normal",
+      "narrative": "Subscription billing agent processes recurring charges. Volume scales 8x on the 1st of each month — documented.",
+      "agent_profile": {"agent_id": "agent_subscription_billing_01", "registered_purpose": "Process monthly subscription billing on the 1st", "registration_date": "2024-12-01", "owner": "billing-ops@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt52_001", "timestamp": "2026-06-01T08:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Stripe"}, "auth_details": {"scopes_granted": ["write:invoices", "write:charges"], "scope_delta": false}}, {"event_id": "evt_nt52_002", "timestamp": "2026-06-01T08:30:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 15, "baseline_24h": 2}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Stripe"], "total_auth_events_24h": 18, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0, "note": "1st of month — documented cycle."},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.7, 0.92], "key_signals": ["1st-of-month documented cycle"], "answer_rationale": "Cycle-aligned spike."}
+    },
+    {
+      "id": "N-T-53", "category": "normal",
+      "narrative": "Sentry error triage agent reads from Sentry and writes to Jira. Two-app baseline.",
+      "agent_profile": {"agent_id": "agent_sentry_triage_01", "registered_purpose": "Triage Sentry errors and create Jira tickets", "registration_date": "2025-02-04", "owner": "qa-eng@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt53_001", "timestamp": "2026-05-13T23:30:00Z", "event_type": "session_start", "target_app": {"app_name": "Sentry"}, "auth_details": {"scopes_granted": ["read:events"], "scope_delta": false}}, {"event_id": "evt_nt53_002", "timestamp": "2026-05-13T23:31:00Z", "event_type": "session_start", "target_app": {"app_name": "Jira"}, "auth_details": {"scopes_granted": ["write:issues"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Sentry", "Jira"], "total_auth_events_24h": 12, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["two-app baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-54", "category": "normal",
+      "narrative": "Newly registered tax-jurisdiction lookup agent reads Avalara data.",
+      "agent_profile": {"agent_id": "agent_tax_jurisdiction_01", "registered_purpose": "Tax jurisdiction lookups from Avalara", "registration_date": "2026-05-12", "owner": "finance-ops@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt54_001", "timestamp": "2026-05-14T00:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Avalara"}, "auth_details": {"scopes_granted": ["read:tax_jurisdictions"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Avalara"], "total_auth_events_24h": 1, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 1},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.65, 0.88], "key_signals": ["new agent in expected app"], "answer_rationale": "New agent."}
+    },
+    {
+      "id": "N-T-55", "category": "normal",
+      "narrative": "Webhook delivery monitor reads delivery status from multiple webhook providers.",
+      "agent_profile": {"agent_id": "agent_webhook_monitor_01", "registered_purpose": "Monitor webhook delivery health across providers", "registration_date": "2024-12-15", "owner": "platform-eng@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt55_001", "timestamp": "2026-05-14T01:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Hookdeck"}, "auth_details": {"scopes_granted": ["read:events"], "scope_delta": false}}, {"event_id": "evt_nt55_002", "timestamp": "2026-05-14T01:01:00Z", "event_type": "session_start", "target_app": {"app_name": "Svix"}, "auth_details": {"scopes_granted": ["read:events"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Hookdeck", "Svix"], "total_auth_events_24h": 4, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.86, 0.96], "key_signals": ["multi-app baseline matches purpose"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-56", "category": "normal",
+      "narrative": "GitHub Action workflow trigger reads PR events. High frequency, baseline.",
+      "agent_profile": {"agent_id": "agent_github_action_runner_01", "registered_purpose": "GitHub Action runner for CI workflows", "registration_date": "2024-04-08", "owner": "developer-platform@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt56_001", "timestamp": "2026-05-14T02:00:00Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request", "write:checks"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["GitHub"], "total_auth_events_24h": 240, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["high frequency is baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-57", "category": "normal",
+      "narrative": "Newsletter content drafting agent reads Notion + writes drafts back. Same workflow daily.",
+      "agent_profile": {"agent_id": "agent_newsletter_draft_01", "registered_purpose": "Draft internal newsletters from Notion content", "registration_date": "2025-04-04", "owner": "internal-comms@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt57_001", "timestamp": "2026-05-14T03:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Notion"}, "auth_details": {"scopes_granted": ["read:pages", "write:pages"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Notion"], "total_auth_events_24h": 2, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["daily baseline"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-58", "category": "normal",
+      "narrative": "AWS infrastructure inventory agent reads across all AWS services daily. Multi-service baseline by design.",
+      "agent_profile": {"agent_id": "agent_aws_inventory_01", "registered_purpose": "AWS multi-service inventory for asset management", "registration_date": "2024-03-18", "owner": "platform-eng@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt58_001", "timestamp": "2026-05-14T04:00:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS EC2"}, "auth_details": {"scopes_granted": ["ec2:Describe*"], "scope_delta": false}}, {"event_id": "evt_nt58_002", "timestamp": "2026-05-14T04:02:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS RDS"}, "auth_details": {"scopes_granted": ["rds:Describe*"], "scope_delta": false}}, {"event_id": "evt_nt58_003", "timestamp": "2026-05-14T04:04:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS S3"}, "auth_details": {"scopes_granted": ["s3:ListAllMyBuckets"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS EC2", "AWS RDS", "AWS S3", "AWS IAM"], "total_auth_events_24h": 6, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.82, 0.95], "key_signals": ["multi-service is registered purpose"], "answer_rationale": "Wide AWS read access is the agent's job."}
+    },
+    {
+      "id": "N-T-59", "category": "normal",
+      "narrative": "Customer onboarding agent triggers on Stripe customer.created event. Single-app baseline.",
+      "agent_profile": {"agent_id": "agent_customer_onboard_01", "registered_purpose": "Customer onboarding triggered by Stripe events", "registration_date": "2025-07-09", "owner": "growth-ops@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_nt59_001", "timestamp": "2026-05-14T05:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Stripe"}, "auth_details": {"scopes_granted": ["read:customers", "write:customers"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Stripe"], "total_auth_events_24h": 8, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.88, 0.97], "key_signals": ["established"], "answer_rationale": "Routine."}
+    },
+    {
+      "id": "N-T-60", "category": "normal",
+      "narrative": "Newly registered status-page updater agent makes first call.",
+      "agent_profile": {"agent_id": "agent_statuspage_updater_01", "registered_purpose": "Update Statuspage.io from PagerDuty incidents", "registration_date": "2026-05-12", "owner": "sre@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_nt60_001", "timestamp": "2026-05-14T06:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Statuspage"}, "auth_details": {"scopes_granted": ["write:incidents"], "scope_delta": false}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Statuspage"], "total_auth_events_24h": 1, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 1},
+      "ground_truth": {"classification": "Normal", "tier": null, "expected_confidence_range": [0.65, 0.88], "key_signals": ["new agent"], "answer_rationale": "New agent."}
     }
   ]
 }
