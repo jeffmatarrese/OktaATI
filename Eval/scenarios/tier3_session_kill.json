@@ -1,0 +1,168 @@
+{
+  "scenarios": [
+    {
+      "id": "T3-01",
+      "category": "tier3",
+      "narrative": "Agent's credentials appear to be in use from two geographically divergent locations simultaneously, with the anomalous session exhibiting attack-pattern behavior.",
+      "agent_profile": {
+        "agent_id": "agent_salesforce_report_gen_04",
+        "registered_purpose": "Generate weekly sales reports from Salesforce data",
+        "registration_date": "2026-02-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t301_001", "timestamp": "2026-05-10T14:23:07Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_granted": ["read:contacts", "read:opportunities", "read:reports"], "scope_delta": false}, "session_metadata": {"ip_address": "203.0.113.45", "geolocation": "San Francisco, CA", "concurrent_sessions": 1, "note": "ongoing legitimate session"}},
+        {"event_id": "evt_t301_002", "timestamp": "2026-05-10T14:23:51Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_requested": ["read:contacts", "read:accounts", "export:all"], "scope_delta": true, "new_scopes": ["read:accounts", "export:all"]}, "session_metadata": {"ip_address": "45.33.32.156", "geolocation": "Moscow, Russia", "concurrent_sessions": 2}},
+        {"event_id": "evt_t301_003", "timestamp": "2026-05-10T14:24:10Z", "event_type": "session_start", "target_app": {"app_name": "Google Workspace", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["read:drive", "write:drive", "admin:directory"], "scope_delta": true}, "session_metadata": {"ip_address": "45.33.32.156"}},
+        {"event_id": "evt_t301_004", "timestamp": "2026-05-10T14:24:42Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS IAM", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["admin:*"], "failure_reason": "scope_denied"}, "session_metadata": {"ip_address": "45.33.32.156"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce", "Google Workspace", "AWS IAM"],
+        "total_auth_events_24h": 47,
+        "scope_escalation_attempts_7d": 3,
+        "new_app_connections_7d": 2,
+        "concurrent_sessions": 2,
+        "baseline_auth_events_24h": 5
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 3,
+        "expected_confidence_range": [0.92, 0.99],
+        "key_signals": ["simultaneous sessions from US + Russia", "admin and export scopes on new apps", "failed admin:* on AWS IAM removes benign interpretation"],
+        "answer_rationale": "Textbook credential compromise → lateral movement → data exfiltration. Kill all sessions and rotate credentials."
+      }
+    },
+    {
+      "id": "T3-02",
+      "category": "tier3",
+      "narrative": "Agent registered for Slack channel summarization requests admin access to identity providers and cloud infrastructure in rapid succession (12 minutes).",
+      "agent_profile": {
+        "agent_id": "agent_slack_summary_07",
+        "registered_purpose": "Summarize Slack channels for daily team digest",
+        "registration_date": "2025-11-08",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t302_001", "timestamp": "2026-05-13T16:00:00Z", "event_type": "scope_request", "target_app": {"app_name": "Okta Admin Console", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["admin:users", "admin:groups"], "scope_delta": true}},
+        {"event_id": "evt_t302_002", "timestamp": "2026-05-13T16:03:00Z", "event_type": "scope_request", "target_app": {"app_name": "Google Workspace Admin", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["admin:directory", "admin:security"], "scope_delta": true}},
+        {"event_id": "evt_t302_003", "timestamp": "2026-05-13T16:07:00Z", "event_type": "scope_request", "target_app": {"app_name": "AWS IAM", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["iam:CreateUser", "iam:AttachPolicy"], "scope_delta": true}},
+        {"event_id": "evt_t302_004", "timestamp": "2026-05-13T16:12:00Z", "event_type": "scope_request", "target_app": {"app_name": "Azure AD", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["Directory.ReadWrite.All", "RoleManagement.ReadWrite.Directory"], "scope_delta": true}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Slack", "Okta Admin Console", "Google Workspace Admin", "AWS IAM", "Azure AD"],
+        "total_auth_events_24h": 11,
+        "scope_escalation_attempts_7d": 4,
+        "new_app_connections_7d": 4
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 3,
+        "expected_confidence_range": [0.94, 0.99],
+        "key_signals": ["4 new admin-level app connections in 12 minutes", "all targeting identity and cloud infrastructure", "registered purpose is Slack summarization"],
+        "answer_rationale": "Automated privilege escalation across identity providers — unambiguously malicious for a Slack summarization agent. Terminate immediately."
+      }
+    },
+    {
+      "id": "T3-03",
+      "category": "tier3",
+      "narrative": "Expired token replayed across multiple apps followed by successful auth from anomalous geo.",
+      "agent_profile": {
+        "agent_id": "agent_cicd_deploy_runner_02",
+        "registered_purpose": "Run staging deploys triggered by main-branch merges",
+        "registration_date": "2025-11-03",
+        "owner": "platform-eng@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t303_001", "timestamp": "2026-05-14T08:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "Salesforce"}, "auth_details": {"failure_reason": "token_expired", "token_fingerprint": "abc123def456", "token_age_hours": 72}},
+        {"event_id": "evt_t303_002", "timestamp": "2026-05-14T08:00:18Z", "event_type": "failed_auth", "target_app": {"app_name": "Google Workspace"}, "auth_details": {"failure_reason": "token_expired", "token_fingerprint": "abc123def456"}},
+        {"event_id": "evt_t303_003", "timestamp": "2026-05-14T08:00:42Z", "event_type": "failed_auth", "target_app": {"app_name": "Workday"}, "auth_details": {"failure_reason": "token_expired", "token_fingerprint": "abc123def456"}},
+        {"event_id": "evt_t303_004", "timestamp": "2026-05-14T08:02:00Z", "event_type": "auth", "target_app": {"app_name": "Salesforce"}, "auth_details": {"result": "success", "token_fingerprint": "xyz789new"}, "session_metadata": {"ip_address": "91.108.4.22", "geolocation": "Tehran, Iran"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce", "Google Workspace", "Workday"],
+        "total_auth_events_24h": 8,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Replayed token never refreshed; success from novel geo on fresh token."
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 3,
+        "expected_confidence_range": [0.9, 0.99],
+        "key_signals": ["token replay across 3 apps", "successful auth from Iran (novel geo)", "same fingerprint on all failed attempts"],
+        "answer_rationale": "Classic token-theft probe followed by fresh-token success from anomalous geo. Kill session and trigger credential rotation."
+      }
+    },
+    {
+      "id": "T3-04",
+      "category": "tier3",
+      "narrative": "Service-account credentials produce a burst of failed auths across 20 apps in 60 seconds — credential-stuffing pattern from a single novel IP.",
+      "agent_profile": {
+        "agent_id": "agent_data_sync_dw_01",
+        "registered_purpose": "Nightly sync of warehouse tables from BigQuery to Snowflake",
+        "registration_date": "2024-10-04",
+        "owner": "data-platform@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t304_001", "timestamp": "2026-05-14T03:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "Salesforce"}, "auth_details": {"failure_reason": "scope_denied"}, "session_metadata": {"ip_address": "194.62.41.18", "geolocation": "Kyiv, Ukraine"}},
+        {"event_id": "evt_t304_002", "timestamp": "2026-05-14T03:00:08Z", "event_type": "failed_auth", "target_app": {"app_name": "Workday"}, "auth_details": {"failure_reason": "scope_denied"}, "session_metadata": {"ip_address": "194.62.41.18"}},
+        {"event_id": "evt_t304_003", "timestamp": "2026-05-14T03:00:14Z", "event_type": "failed_auth", "target_app": {"app_name": "NetSuite"}, "auth_details": {"failure_reason": "scope_denied"}, "session_metadata": {"ip_address": "194.62.41.18"}},
+        {"event_id": "evt_t304_004", "timestamp": "2026-05-14T03:00:20Z", "event_type": "failed_auth", "target_app": {"app_name": "Okta Admin Console"}, "auth_details": {"failure_reason": "scope_denied", "scopes_requested": ["admin:users"]}, "session_metadata": {"ip_address": "194.62.41.18"}},
+        {"event_id": "evt_t304_005", "timestamp": "2026-05-14T03:00:55Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS IAM"}, "auth_details": {"failure_reason": "scope_denied", "scopes_requested": ["iam:*"]}, "session_metadata": {"ip_address": "194.62.41.18"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce", "Workday", "NetSuite", "Okta Admin Console", "AWS IAM", "(+15 others)"],
+        "total_auth_events_24h": 22,
+        "scope_escalation_attempts_7d": 20,
+        "new_app_connections_7d": 0,
+        "note": "20 failed auth attempts across previously untouched apps in 60 seconds, all from same IP."
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 3,
+        "expected_confidence_range": [0.92, 0.99],
+        "key_signals": ["20 failed auths across novel apps in 60 seconds", "single novel IP", "admin scope attempts"],
+        "answer_rationale": "Credential-stuffing / app-discovery probe pattern. Kill session, rotate the service-account credentials, audit any apps that did grant scopes."
+      }
+    },
+    {
+      "id": "T3-05",
+      "category": "tier3",
+      "narrative": "Sequence matches lateral-movement playbook: anomalous IP gains scope, then immediately creates a new user with elevated privileges via the identity provider.",
+      "agent_profile": {
+        "agent_id": "agent_hr_onboarding_01",
+        "registered_purpose": "Identify newly-hired employees and send orientation materials",
+        "registration_date": "2025-04-22",
+        "owner": "hr-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t305_001", "timestamp": "2026-05-12T03:14:00Z", "event_type": "session_start", "target_app": {"app_name": "Workday"}, "auth_details": {"scopes_requested": ["admin:employee_records"], "scope_delta": true}, "session_metadata": {"ip_address": "103.22.45.91", "geolocation": "Singapore"}},
+        {"event_id": "evt_t305_002", "timestamp": "2026-05-12T03:14:50Z", "event_type": "scope_request", "target_app": {"app_name": "Okta Admin Console", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["admin:users", "admin:roles"], "scope_delta": true}, "session_metadata": {"ip_address": "103.22.45.91"}},
+        {"event_id": "evt_t305_003", "timestamp": "2026-05-12T03:15:42Z", "event_type": "privilege_escalation", "target_app": {"app_name": "Okta Admin Console"}, "auth_details": {"action": "create_user_with_admin_role", "new_principal": "backup_svc_acct_01"}, "session_metadata": {"ip_address": "103.22.45.91"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Workday", "Okta Admin Console"],
+        "total_auth_events_24h": 3,
+        "scope_escalation_attempts_7d": 2,
+        "new_app_connections_7d": 1
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 3,
+        "expected_confidence_range": [0.92, 0.99],
+        "key_signals": ["off-hours auth from novel geo", "scope escalation to identity provider", "explicit privilege_escalation event creating a new admin user"],
+        "answer_rationale": "Persistence creation via admin user creation is the textbook lateral-movement endgame. Kill session immediately, audit the created user, rotate credentials."
+      }
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "scenarios": [
+    {
+      "id": "T1-01",
+      "category": "tier1",
+      "narrative": "Reporting agent that has only ever requested read scopes suddenly requests write access to Salesforce.",
+      "agent_profile": {
+        "agent_id": "agent_salesforce_report_gen_04",
+        "registered_purpose": "Generate weekly sales reports from Salesforce data",
+        "registration_date": "2026-02-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t101_001", "timestamp": "2026-05-10T14:23:07Z", "event_type": "scope_request", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_requested": ["read:contacts", "read:opportunities", "write:contacts"], "scope_delta": true, "new_scopes": ["write:contacts"]}, "session_metadata": {"ip_address": "203.0.113.45"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 1,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.55, 0.78],
+        "key_signals": ["scope_delta: write:contacts", "registered purpose is reporting (no write needed)", "single-app, single-scope change"],
+        "answer_rationale": "Scope outside historical pattern and registered purpose, but only a single scope change to an existing app. Could be a legitimate workflow expansion. Stall and surface for analyst review."
+      }
+    },
+    {
+      "id": "T1-02",
+      "category": "tier1",
+      "narrative": "Agent that always authenticates from a US-based IP suddenly authenticates from a Romanian IP. Otherwise normal.",
+      "agent_profile": {
+        "agent_id": "agent_salesforce_report_gen_04",
+        "registered_purpose": "Generate weekly sales reports from Salesforce data",
+        "registration_date": "2026-02-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t102_001", "timestamp": "2026-05-10T14:23:07Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_granted": ["read:contacts", "read:opportunities", "read:reports"], "scope_delta": false}, "session_metadata": {"ip_address": "185.220.101.42", "geolocation": "Bucharest, Romania"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "historical_geo": "US-only across 14 weeks"
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.55, 0.78],
+        "key_signals": ["geo shift from US to Romania", "no other signals abnormal"],
+        "answer_rationale": "IP change is meaningful but not definitive. Could be infrastructure migration. Stall to verify."
+      }
+    },
+    {
+      "id": "T1-03",
+      "category": "tier1",
+      "narrative": "Agent that exclusively runs 9am–6pm PT initiates a session at 2:47am PT on a Tuesday.",
+      "agent_profile": {
+        "agent_id": "agent_gworkspace_doc_summary_01",
+        "registered_purpose": "Summarize team Google Docs for weekly digest",
+        "registration_date": "2025-11-08",
+        "owner": "platform-eng@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t103_001", "timestamp": "2026-05-12T09:47:00Z", "event_type": "session_start", "target_app": {"app_name": "Google Workspace"}, "auth_details": {"scopes_granted": ["read:docs", "read:sheets"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.18", "note": "2:47am PT"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Google Workspace"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "historical_hours": "9am-6pm PT only"
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.55, 0.78],
+        "key_signals": ["time-of-day outside established window", "all other signals normal"],
+        "answer_rationale": "Could be scheduled job change, manual run, or credential theft. Stall to let analyst verify."
+      }
+    },
+    {
+      "id": "T1-04",
+      "category": "tier1",
+      "narrative": "Sales reporting agent connects to a new app (HubSpot) for the first time. Single new app, scopes plausible for sales context.",
+      "agent_profile": {
+        "agent_id": "agent_sales_lead_enrich_03",
+        "registered_purpose": "Enrich new Salesforce leads with Clearbit company data",
+        "registration_date": "2025-06-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t104_001", "timestamp": "2026-05-13T17:30:00Z", "event_type": "session_start", "target_app": {"app_name": "HubSpot", "app_category": "Marketing"}, "auth_details": {"scopes_granted": ["read:contacts"], "scope_delta": true}, "session_metadata": {"ip_address": "198.51.100.30"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce", "Clearbit", "HubSpot"],
+        "total_auth_events_24h": 7,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 1
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.5, 0.75],
+        "key_signals": ["first-time app connection", "read-only scope plausible for purpose"],
+        "answer_rationale": "Single new app with read-only scopes is mildly anomalous. Could be a legitimate workflow expansion. Stall for owner confirmation."
+      }
+    },
+    {
+      "id": "T1-05",
+      "category": "tier1",
+      "narrative": "Agent's IP changed within the same country — moved from one US datacenter region to another. Could be infra migration.",
+      "agent_profile": {
+        "agent_id": "agent_zendesk_summary_03",
+        "registered_purpose": "Summarize customer support tickets for daily handoff",
+        "registration_date": "2025-09-12",
+        "owner": "support-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t105_001", "timestamp": "2026-05-12T20:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Zendesk"}, "auth_details": {"scopes_granted": ["read:tickets", "read:customer_profiles"], "scope_delta": false}, "session_metadata": {"ip_address": "52.14.88.110", "geolocation": "us-west-2 (AWS)", "note": "previous baseline: us-east-1"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Zendesk"],
+        "total_auth_events_24h": 3,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.45, 0.7],
+        "key_signals": ["IP changed but still in same country/cloud provider", "all other signals normal"],
+        "answer_rationale": "Mild geo signal. Likely benign infra migration but should be confirmed."
+      }
+    },
+    {
+      "id": "T1-06",
+      "category": "tier1",
+      "narrative": "Token refresh rate is 4x baseline for a single 1-hour window, then returns to normal. No scope changes, no new apps.",
+      "agent_profile": {
+        "agent_id": "agent_slack_summary_07",
+        "registered_purpose": "Summarize Slack channels for daily team digest",
+        "registration_date": "2025-11-08",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t106_001", "timestamp": "2026-05-13T16:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Slack"}, "auth_details": {"scopes_granted": ["channels:history", "channels:read"], "scope_delta": false}},
+        {"event_id": "evt_t106_002", "timestamp": "2026-05-13T16:10:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 8, "note": "baseline 2/24h"}},
+        {"event_id": "evt_t106_003", "timestamp": "2026-05-13T16:20:00Z", "event_type": "token_refresh"},
+        {"event_id": "evt_t106_004", "timestamp": "2026-05-13T16:32:00Z", "event_type": "token_refresh"}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Slack"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.5, 0.72],
+        "key_signals": ["token refresh count 4x baseline", "no other anomalies"],
+        "answer_rationale": "Could indicate token issuance failures, retry storms, or attempted reuse. Without other signals, Stall for analyst review."
+      }
+    },
+    {
+      "id": "T1-07",
+      "category": "tier1",
+      "narrative": "Agent migrated from OpenAI to Anthropic platform. Same purpose, same scopes, same app — but the ai_platform field changed.",
+      "agent_profile": {
+        "agent_id": "agent_marketing_campaign_sync_01",
+        "registered_purpose": "Sync Mailchimp campaign metrics to Snowflake nightly",
+        "registration_date": "2025-12-01",
+        "owner": "marketing-ops@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "service_account",
+        "note": "Previously ai_platform=openai for 5 months"
+      },
+      "events": [
+        {"event_id": "evt_t107_001", "timestamp": "2026-05-13T13:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Mailchimp"}, "auth_details": {"scopes_granted": ["read:campaigns", "read:reports"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.25"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Mailchimp", "Snowflake"],
+        "total_auth_events_24h": 2,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.5, 0.72],
+        "key_signals": ["ai_platform changed from openai to anthropic", "no other behavioral changes"],
+        "answer_rationale": "Platform switch is a meaningful change that should be confirmed with the owner — could be legitimate migration or could indicate the agent has been rebuilt by an attacker."
+      }
+    },
+    {
+      "id": "T1-08",
+      "category": "tier1",
+      "narrative": "Single failed_auth event (token expired) immediately followed by successful auth from the same IP with a fresh token. Could be transient.",
+      "agent_profile": {
+        "agent_id": "agent_finance_ap_cycle_01",
+        "registered_purpose": "Process accounts-payable reconciliation on the 15th and 30th of each month",
+        "registration_date": "2024-12-01",
+        "owner": "finance-ops@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t108_001", "timestamp": "2026-05-15T17:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "NetSuite"}, "auth_details": {"failure_reason": "token_expired"}, "session_metadata": {"ip_address": "10.42.0.40"}},
+        {"event_id": "evt_t108_002", "timestamp": "2026-05-15T17:00:42Z", "event_type": "auth", "target_app": {"app_name": "NetSuite"}, "auth_details": {"scopes_granted": ["read:vendor_payments", "read:invoices"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.40"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["NetSuite"],
+        "total_auth_events_24h": 5,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.4, 0.65],
+        "key_signals": ["single failed_auth on token expiry", "same IP on retry", "no broader pattern"],
+        "answer_rationale": "Likely a benign token-expiry race. Stall to verify but very low severity."
+      }
+    },
+    {
+      "id": "T1-09",
+      "category": "tier1",
+      "narrative": "Two concurrent sessions from the same IP range to the same app. Could be a parallelization change in the agent.",
+      "agent_profile": {
+        "agent_id": "agent_code_review_assist_01",
+        "registered_purpose": "Generate code-review suggestions on open pull requests",
+        "registration_date": "2025-07-14",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t109_001", "timestamp": "2026-05-14T17:00:00Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.31", "concurrent_sessions": 2}},
+        {"event_id": "evt_t109_002", "timestamp": "2026-05-14T17:00:18Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.32", "concurrent_sessions": 2}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["GitHub"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "historical_concurrent_sessions": 1
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.45, 0.7],
+        "key_signals": ["concurrent sessions from same IP range, never seen before", "same scopes, same app"],
+        "answer_rationale": "Concurrent sessions are mildly suspicious but from the same trusted IP range. Likely a parallelization change. Stall to confirm."
+      }
+    },
+    {
+      "id": "T1-10",
+      "category": "tier1",
+      "narrative": "Single session ran 3x longer than baseline (180 min vs. 60 min baseline). No scope or app changes.",
+      "agent_profile": {
+        "agent_id": "agent_eng_pr_summary_02",
+        "registered_purpose": "Generate weekly PR summary digest from GitHub",
+        "registration_date": "2025-10-30",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t110_001", "timestamp": "2026-05-15T22:00:00Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request"], "scope_delta": false}},
+        {"event_id": "evt_t110_002", "timestamp": "2026-05-16T01:00:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 180, "baseline_duration_minutes": 18}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["GitHub"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.4, 0.65],
+        "key_signals": ["session duration 10x baseline", "no other anomalies"],
+        "answer_rationale": "Duration outlier with no corroborating signals. Could be a stuck job or a slow legitimate query."
+      }
+    },
+    {
+      "id": "T1-11",
+      "category": "tier1",
+      "narrative": "Compliance audit agent's auth comes from a new outbound NAT IP that doesn't match any known infra range. Same scopes, same apps, same schedule.",
+      "agent_profile": {
+        "agent_id": "agent_compliance_sox_audit_02",
+        "registered_purpose": "Collect SOX evidence (access logs, change history) from in-scope financial systems",
+        "registration_date": "2024-08-01",
+        "owner": "compliance@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t111_001", "timestamp": "2026-06-01T15:00:00Z", "event_type": "session_start", "target_app": {"app_name": "NetSuite"}, "auth_details": {"scopes_granted": ["read:audit_log", "read:financial_reports"], "scope_delta": false}, "session_metadata": {"ip_address": "172.59.44.118", "geolocation": "Atlanta, GA (mobile carrier)"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["NetSuite"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "historical_ip_range": "AWS us-east-1 only"
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.55, 0.78],
+        "key_signals": ["IP from a mobile carrier range, never seen before", "for a service_account auth method this is unusual"],
+        "answer_rationale": "Service-account credentials being used from a mobile-carrier IP is unusual and worth confirming. All other signals normal."
+      }
+    },
+    {
+      "id": "T1-12",
+      "category": "tier1",
+      "narrative": "Agent's scopes_requested SHRUNK — it asked for fewer scopes than it normally does. Could be a benign refactor.",
+      "agent_profile": {
+        "agent_id": "agent_marketing_campaign_sync_01",
+        "registered_purpose": "Sync Mailchimp campaign metrics to Snowflake nightly",
+        "registration_date": "2025-12-01",
+        "owner": "marketing-ops@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t112_001", "timestamp": "2026-05-14T13:00:00Z", "event_type": "scope_request", "target_app": {"app_name": "Mailchimp"}, "auth_details": {"scopes_requested": ["read:campaigns"], "scope_delta": true, "removed_scopes": ["read:reports"], "note": "previously requested both scopes"}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Mailchimp", "Snowflake"],
+        "total_auth_events_24h": 2,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.35, 0.6],
+        "key_signals": ["scope shrinkage from baseline"],
+        "answer_rationale": "Shrinkage is unusual but not threatening. Could be a refactor. Surface for confirmation."
+      }
+    },
+    {
+      "id": "T1-13",
+      "category": "tier1",
+      "narrative": "Integration signals show CRUD count 1.6x baseline. Auth-layer data is clean — no new scopes, no new apps.",
+      "agent_profile": {
+        "agent_id": "agent_zendesk_summary_03",
+        "registered_purpose": "Summarize customer support tickets for daily handoff",
+        "registration_date": "2025-09-12",
+        "owner": "support-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t113_001", "timestamp": "2026-05-12T20:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Zendesk"}, "auth_details": {"scopes_granted": ["read:tickets", "read:customer_profiles"], "scope_delta": false}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Zendesk"],
+        "total_auth_events_24h": 3,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "integration_signals": {"source": "zendesk_audit_log", "crud_action_count_1h": 84, "data_volume_indicator": "slightly_elevated", "baseline_crud_1h": 52},
+      "ground_truth": {
+        "classification": "Anomalous",
+        "tier": 1,
+        "expected_confidence_range": [0.4, 0.65],
+        "key_signals": ["CRUD count 1.6x baseline", "no auth-layer anomalies"],
+        "answer_rationale": "Moderate volume elevation alone is not enough for higher tiers. Stall and let analyst correlate with ticket volume."
+      }
+    }
+  ]
+}

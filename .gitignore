@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environments (real secrets live in .env, .env.example is committed)
+.env
+.env.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Eval pipeline outputs
+Eval/results/*.json
+Eval/results/*.md
+Eval/results/*.csv
+!Eval/results/.gitkeep

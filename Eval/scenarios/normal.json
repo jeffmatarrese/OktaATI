@@ -1,0 +1,480 @@
+{
+  "scenarios": [
+    {
+      "id": "N-01",
+      "category": "normal",
+      "narrative": "Salesforce reporting agent runs its weekly cycle. Same scopes, same app, same IP, same time of day as every prior week.",
+      "agent_profile": {
+        "agent_id": "agent_salesforce_report_gen_04",
+        "registered_purpose": "Generate weekly sales reports from Salesforce data",
+        "registration_date": "2026-02-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {
+          "event_id": "evt_n01_001",
+          "timestamp": "2026-05-10T14:23:07Z",
+          "event_type": "session_start",
+          "target_app": {"app_id": "app_salesforce_001", "app_name": "Salesforce", "app_category": "CRM"},
+          "auth_details": {"scopes_requested": ["read:contacts", "read:opportunities", "read:reports"], "scopes_granted": ["read:contacts", "read:opportunities", "read:reports"], "scope_delta": false},
+          "session_metadata": {"ip_address": "203.0.113.45", "geolocation": "San Francisco, CA"}
+        },
+        {"event_id": "evt_n01_002", "timestamp": "2026-05-10T15:18:07Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 1}},
+        {"event_id": "evt_n01_003", "timestamp": "2026-05-10T15:25:30Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 62}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "integration_signals": {"source": "salesforce_audit_log", "crud_action_count_1h": 12, "data_volume_indicator": "normal", "write_attempt_on_readonly_scope": false},
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.8, 0.98],
+        "key_signals": ["consistent IP", "no scope delta", "duration within historical range", "single app within registered purpose"],
+        "answer_rationale": "Every signal aligns with registered purpose and historical baseline. No anomalies."
+      }
+    },
+    {
+      "id": "N-02",
+      "category": "normal",
+      "narrative": "Same reporting agent runs 3x more frequently during fiscal quarter close. Higher token refresh rate, longer sessions, but volume aligns with known business cycle.",
+      "agent_profile": {
+        "agent_id": "agent_salesforce_report_gen_04",
+        "registered_purpose": "Generate weekly sales reports from Salesforce data",
+        "registration_date": "2026-02-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n02_001", "timestamp": "2026-03-31T09:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce", "app_category": "CRM"}, "auth_details": {"scopes_granted": ["read:contacts", "read:opportunities", "read:reports"], "scope_delta": false}, "session_metadata": {"ip_address": "203.0.113.45"}},
+        {"event_id": "evt_n02_002", "timestamp": "2026-03-31T09:55:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 8}},
+        {"event_id": "evt_n02_003", "timestamp": "2026-03-31T12:00:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 180}},
+        {"event_id": "evt_n02_004", "timestamp": "2026-03-31T14:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_granted": ["read:contacts", "read:opportunities", "read:reports"], "scope_delta": false}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce"],
+        "total_auth_events_24h": 12,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Today is the last day of Q1 fiscal close."
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.7, 0.92],
+        "key_signals": ["elevated volume but time-correlated with fiscal close", "no scope changes", "no new apps", "consistent IP"],
+        "answer_rationale": "Elevated volume aligns with quarter-end business cycle. No new scopes, apps, or geo changes. Classic false-positive trap — naive model flags the volume; calibrated model recognizes seasonal pattern."
+      }
+    },
+    {
+      "id": "N-03",
+      "category": "normal",
+      "narrative": "Newly registered agent connects to its first application for the first time. No historical baseline.",
+      "agent_profile": {
+        "agent_id": "agent_gworkspace_doc_summary_01",
+        "registered_purpose": "Summarize team Google Docs for weekly digest",
+        "registration_date": "2026-05-08",
+        "owner": "platform-eng@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n03_001", "timestamp": "2026-05-10T16:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Google Workspace", "app_category": "Productivity"}, "auth_details": {"scopes_granted": ["read:docs", "read:drive"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.18", "geolocation": "us-east-1 (AWS)"}},
+        {"event_id": "evt_n03_002", "timestamp": "2026-05-10T16:14:00Z", "event_type": "token_refresh"},
+        {"event_id": "evt_n03_003", "timestamp": "2026-05-10T16:15:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 15}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Google Workspace"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 1
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.65, 0.88],
+        "key_signals": ["new agent in expected app", "scopes match registered purpose", "short exploratory session"],
+        "answer_rationale": "New agent doing exactly what it was registered to do. Lack of historical baseline is not the same as anomalous behavior."
+      }
+    },
+    {
+      "id": "N-04",
+      "category": "normal",
+      "narrative": "Internal CI/CD deploy runner executes a routine staging deploy after a main-branch merge. Same scopes, same time window pattern as 200+ prior deploys.",
+      "agent_profile": {
+        "agent_id": "agent_cicd_deploy_runner_02",
+        "registered_purpose": "Run staging deploys triggered by main-branch merges",
+        "registration_date": "2025-11-03",
+        "owner": "platform-eng@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_n04_001", "timestamp": "2026-05-10T18:02:11Z", "event_type": "session_start", "target_app": {"app_name": "GitHub", "app_category": "VCS"}, "auth_details": {"scopes_granted": ["read:deployments", "write:deployments", "read:repo"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.18", "geolocation": "us-east-1 (AWS)"}},
+        {"event_id": "evt_n04_002", "timestamp": "2026-05-10T18:03:42Z", "event_type": "session_start", "target_app": {"app_name": "AWS ECR", "app_category": "Infrastructure"}, "auth_details": {"scopes_granted": ["read:ecr", "write:ecr"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.18"}},
+        {"event_id": "evt_n04_003", "timestamp": "2026-05-10T18:14:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 12}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["GitHub", "AWS ECR"],
+        "total_auth_events_24h": 18,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Multi-app access is baseline — deploy pipeline always touches both."
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.8, 0.95],
+        "key_signals": ["multi-app pattern matches historical baseline", "scopes consistent", "AWS-internal IP"],
+        "answer_rationale": "Cross-app access is the agent's established baseline, not an anomaly. Tests that the model doesn't naively flag multi-app activity."
+      }
+    },
+    {
+      "id": "N-05",
+      "category": "normal",
+      "narrative": "Customer support agent runs Zendesk ticket summarization on a normal Tuesday afternoon.",
+      "agent_profile": {
+        "agent_id": "agent_zendesk_summary_03",
+        "registered_purpose": "Summarize customer support tickets for daily handoff",
+        "registration_date": "2025-09-12",
+        "owner": "support-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n05_001", "timestamp": "2026-05-12T20:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Zendesk", "app_category": "Support"}, "auth_details": {"scopes_granted": ["read:tickets", "read:customer_profiles"], "scope_delta": false}, "session_metadata": {"ip_address": "198.51.100.22"}},
+        {"event_id": "evt_n05_002", "timestamp": "2026-05-12T20:45:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 45}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Zendesk"],
+        "total_auth_events_24h": 3,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "integration_signals": {"source": "zendesk_audit_log", "crud_action_count_1h": 52, "data_volume_indicator": "normal"},
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.85, 0.97],
+        "key_signals": ["single-app, in-scope read access", "volume matches baseline"],
+        "answer_rationale": "Textbook normal operation. Included as a sanity check that the model doesn't over-flag."
+      }
+    },
+    {
+      "id": "N-06",
+      "category": "normal",
+      "narrative": "Marketing automation agent syncs daily email campaign metrics from Mailchimp to the data warehouse. Runs at 6am PT every weekday.",
+      "agent_profile": {
+        "agent_id": "agent_marketing_campaign_sync_01",
+        "registered_purpose": "Sync Mailchimp campaign metrics to Snowflake nightly",
+        "registration_date": "2025-12-01",
+        "owner": "marketing-ops@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_n06_001", "timestamp": "2026-05-13T13:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Mailchimp", "app_category": "Marketing"}, "auth_details": {"scopes_granted": ["read:campaigns", "read:reports"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.25"}},
+        {"event_id": "evt_n06_002", "timestamp": "2026-05-13T13:00:35Z", "event_type": "session_start", "target_app": {"app_name": "Snowflake", "app_category": "Data Warehouse"}, "auth_details": {"scopes_granted": ["write:warehouse"], "scope_delta": false}},
+        {"event_id": "evt_n06_003", "timestamp": "2026-05-13T13:08:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 8}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Mailchimp", "Snowflake"],
+        "total_auth_events_24h": 2,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.8, 0.95],
+        "key_signals": ["scheduled cycle", "two-app baseline established", "scopes match"],
+        "answer_rationale": "Routine ETL pattern. The two-app cross-app access is itself the established baseline."
+      }
+    },
+    {
+      "id": "N-07",
+      "category": "normal",
+      "narrative": "Slack channel summarization agent runs at 9am PT, same time every weekday for 6 months.",
+      "agent_profile": {
+        "agent_id": "agent_slack_summary_07",
+        "registered_purpose": "Summarize Slack channels for daily team digest",
+        "registration_date": "2025-11-08",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n07_001", "timestamp": "2026-05-13T16:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Slack", "app_category": "Communication"}, "auth_details": {"scopes_granted": ["channels:history", "channels:read"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.31"}},
+        {"event_id": "evt_n07_002", "timestamp": "2026-05-13T16:22:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 22}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Slack"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.88, 0.98],
+        "key_signals": ["single app", "scopes locked", "consistent schedule"],
+        "answer_rationale": "Trivially normal. Baseline check."
+      }
+    },
+    {
+      "id": "N-08",
+      "category": "normal",
+      "narrative": "Compliance audit agent reads across multiple apps for monthly SOX evidence collection. It's been doing this on the first business day of each month for over a year.",
+      "agent_profile": {
+        "agent_id": "agent_compliance_sox_audit_02",
+        "registered_purpose": "Collect SOX evidence (access logs, change history) from in-scope financial systems",
+        "registration_date": "2024-08-01",
+        "owner": "compliance@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_n08_001", "timestamp": "2026-05-01T15:00:00Z", "event_type": "session_start", "target_app": {"app_name": "NetSuite", "app_category": "ERP"}, "auth_details": {"scopes_granted": ["read:audit_log", "read:financial_reports"], "scope_delta": false}},
+        {"event_id": "evt_n08_002", "timestamp": "2026-05-01T15:15:00Z", "event_type": "session_start", "target_app": {"app_name": "Workday", "app_category": "HRIS"}, "auth_details": {"scopes_granted": ["read:audit_log"], "scope_delta": false}},
+        {"event_id": "evt_n08_003", "timestamp": "2026-05-01T15:30:00Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce", "app_category": "CRM"}, "auth_details": {"scopes_granted": ["read:audit_log"], "scope_delta": false}},
+        {"event_id": "evt_n08_004", "timestamp": "2026-05-01T15:45:00Z", "event_type": "session_start", "target_app": {"app_name": "Coupa", "app_category": "Procurement"}, "auth_details": {"scopes_granted": ["read:audit_log"], "scope_delta": false}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["NetSuite", "Workday", "Salesforce", "Coupa"],
+        "total_auth_events_24h": 4,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Identical pattern executed on the 1st of each prior month for 21 consecutive months."
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.7, 0.92],
+        "key_signals": ["multi-app pattern is the historical baseline", "all reads on audit-log scopes", "time-correlated with month-start"],
+        "answer_rationale": "Multi-app access is the agent's defining purpose. Naive flagging on 'multiple apps' would be wrong — this is the registered behavior."
+      }
+    },
+    {
+      "id": "N-09",
+      "category": "normal",
+      "narrative": "Sales lead enrichment agent queries Salesforce and Clearbit in tandem to enrich new leads. Cross-app pattern is its registered baseline.",
+      "agent_profile": {
+        "agent_id": "agent_sales_lead_enrich_03",
+        "registered_purpose": "Enrich new Salesforce leads with Clearbit company data",
+        "registration_date": "2025-06-15",
+        "owner": "sales-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n09_001", "timestamp": "2026-05-13T17:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_granted": ["read:leads", "write:leads"], "scope_delta": false}, "session_metadata": {"ip_address": "198.51.100.30"}},
+        {"event_id": "evt_n09_002", "timestamp": "2026-05-13T17:00:42Z", "event_type": "session_start", "target_app": {"app_name": "Clearbit"}, "auth_details": {"scopes_granted": ["read:company"], "scope_delta": false}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Salesforce", "Clearbit"],
+        "total_auth_events_24h": 6,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "integration_signals": {"source": "salesforce_audit_log", "crud_action_count_1h": 38, "data_volume_indicator": "normal", "write_attempt_on_readonly_scope": false},
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.82, 0.96],
+        "key_signals": ["registered cross-app baseline", "write scope matches purpose (enrichment writes)", "normal volume"],
+        "answer_rationale": "Write scope on Salesforce is explicitly part of the agent's registered purpose. Volume normal."
+      }
+    },
+    {
+      "id": "N-10",
+      "category": "normal",
+      "narrative": "HR onboarding agent reads Workday on a Monday morning to detect newly-hired employees for orientation emails. Same pattern every Monday.",
+      "agent_profile": {
+        "agent_id": "agent_hr_onboarding_01",
+        "registered_purpose": "Identify newly-hired employees and send orientation materials",
+        "registration_date": "2025-04-22",
+        "owner": "hr-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n10_001", "timestamp": "2026-05-11T15:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Workday", "app_category": "HRIS"}, "auth_details": {"scopes_granted": ["read:employee_records"], "scope_delta": false}, "session_metadata": {"ip_address": "198.51.100.41"}},
+        {"event_id": "evt_n10_002", "timestamp": "2026-05-11T15:10:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 10}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Workday"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.88, 0.98],
+        "key_signals": ["single app", "read-only", "scheduled cadence"],
+        "answer_rationale": "Routine read-only access matching the agent's purpose."
+      }
+    },
+    {
+      "id": "N-11",
+      "category": "normal",
+      "narrative": "Engineering-productivity agent generates GitHub PR summaries weekly on Fridays. Single app, single scope, six months of consistent operation.",
+      "agent_profile": {
+        "agent_id": "agent_eng_pr_summary_02",
+        "registered_purpose": "Generate weekly PR summary digest from GitHub",
+        "registration_date": "2025-10-30",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n11_001", "timestamp": "2026-05-15T22:00:00Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request"], "scope_delta": false}},
+        {"event_id": "evt_n11_002", "timestamp": "2026-05-15T22:18:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 18}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["GitHub"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.88, 0.98],
+        "key_signals": ["single app", "single read scope", "weekly cadence"],
+        "answer_rationale": "Routine."
+      }
+    },
+    {
+      "id": "N-12",
+      "category": "normal",
+      "narrative": "Finance AP agent runs on the 15th and 30th of each month for the payment cycle. Today is the 15th — elevated activity is the expected pattern.",
+      "agent_profile": {
+        "agent_id": "agent_finance_ap_cycle_01",
+        "registered_purpose": "Process accounts-payable reconciliation on the 15th and 30th of each month",
+        "registration_date": "2024-12-01",
+        "owner": "finance-ops@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_n12_001", "timestamp": "2026-05-15T17:00:00Z", "event_type": "session_start", "target_app": {"app_name": "NetSuite"}, "auth_details": {"scopes_granted": ["read:vendor_payments", "read:invoices"], "scope_delta": false}},
+        {"event_id": "evt_n12_002", "timestamp": "2026-05-15T17:30:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 5}},
+        {"event_id": "evt_n12_003", "timestamp": "2026-05-15T19:30:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 150}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["NetSuite"],
+        "total_auth_events_24h": 7,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Today is the 15th — established cycle day."
+      },
+      "integration_signals": {"source": "netsuite_audit_log", "crud_action_count_1h": 210, "data_volume_indicator": "elevated", "write_attempt_on_readonly_scope": false},
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.7, 0.9],
+        "key_signals": ["volume aligned with documented bi-monthly cycle", "read-only scopes", "no scope delta"],
+        "answer_rationale": "Cycle-aligned volume spike is the expected pattern. Tests that the model doesn't flag elevated volume when it's documented as routine."
+      }
+    },
+    {
+      "id": "N-13",
+      "category": "normal",
+      "narrative": "Code-review agent shows elevated GitHub activity during a release week. Volume up 4x but only because release week has more open PRs.",
+      "agent_profile": {
+        "agent_id": "agent_code_review_assist_01",
+        "registered_purpose": "Generate code-review suggestions on open pull requests",
+        "registration_date": "2025-07-14",
+        "owner": "eng-productivity@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n13_001", "timestamp": "2026-05-14T17:00:00Z", "event_type": "session_start", "target_app": {"app_name": "GitHub"}, "auth_details": {"scopes_granted": ["read:pull_request"], "scope_delta": false}},
+        {"event_id": "evt_n13_002", "timestamp": "2026-05-14T18:00:00Z", "event_type": "token_refresh", "auth_details": {"token_refresh_count_24h": 12}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["GitHub"],
+        "total_auth_events_24h": 12,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0,
+        "note": "Release branch cut this week — PR volume historically peaks during release weeks."
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.7, 0.9],
+        "key_signals": ["volume rationalized by release cycle", "no new scopes or apps"],
+        "answer_rationale": "Volume spike correlates with documented release cycle. Tests calibration on benign-looking elevation."
+      }
+    },
+    {
+      "id": "N-14",
+      "category": "normal",
+      "narrative": "Data sync agent runs nightly between BigQuery and Snowflake. Tonight's run completed identically to the last 90 nightly runs.",
+      "agent_profile": {
+        "agent_id": "agent_data_sync_dw_01",
+        "registered_purpose": "Nightly sync of warehouse tables from BigQuery to Snowflake",
+        "registration_date": "2024-10-04",
+        "owner": "data-platform@acmecorp.com",
+        "ai_platform": "internal",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_n14_001", "timestamp": "2026-05-13T08:00:00Z", "event_type": "session_start", "target_app": {"app_name": "BigQuery"}, "auth_details": {"scopes_granted": ["read:dataset"], "scope_delta": false}},
+        {"event_id": "evt_n14_002", "timestamp": "2026-05-13T08:00:18Z", "event_type": "session_start", "target_app": {"app_name": "Snowflake"}, "auth_details": {"scopes_granted": ["write:warehouse"], "scope_delta": false}},
+        {"event_id": "evt_n14_003", "timestamp": "2026-05-13T08:42:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 42}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["BigQuery", "Snowflake"],
+        "total_auth_events_24h": 2,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 0
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.88, 0.98],
+        "key_signals": ["matched baseline two-app pattern", "scheduled run"],
+        "answer_rationale": "Trivially normal nightly ETL."
+      }
+    },
+    {
+      "id": "N-15",
+      "category": "normal",
+      "narrative": "Newly registered customer support agent makes its very first authentication. No baseline yet.",
+      "agent_profile": {
+        "agent_id": "agent_intercom_routing_01",
+        "registered_purpose": "Route incoming Intercom conversations to the right team",
+        "registration_date": "2026-05-13",
+        "owner": "support-ops@acmecorp.com",
+        "ai_platform": "openai",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_n15_001", "timestamp": "2026-05-13T21:30:00Z", "event_type": "session_start", "target_app": {"app_name": "Intercom"}, "auth_details": {"scopes_granted": ["read:conversations", "write:conversation_routing"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.55", "geolocation": "us-east-1 (AWS)"}},
+        {"event_id": "evt_n15_002", "timestamp": "2026-05-13T21:38:00Z", "event_type": "session_end", "session_metadata": {"session_duration_minutes": 8}}
+      ],
+      "cross_app_context": {
+        "apps_accessed_last_24h": ["Intercom"],
+        "total_auth_events_24h": 1,
+        "scope_escalation_attempts_7d": 0,
+        "new_app_connections_7d": 1
+      },
+      "ground_truth": {
+        "classification": "Normal",
+        "tier": null,
+        "expected_confidence_range": [0.6, 0.85],
+        "key_signals": ["new agent in expected app", "write scope matches purpose (routing)"],
+        "answer_rationale": "New agent, scopes match registered purpose. No baseline isn't anomalous."
+      }
+    }
+  ]
+}
