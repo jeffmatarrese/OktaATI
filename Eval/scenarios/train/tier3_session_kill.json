@@ -1,0 +1,139 @@
+{
+  "scenarios": [
+    {
+      "id": "T3-T-01",
+      "category": "tier3",
+      "narrative": "Three concurrent sessions from the same agent originating in three disparate geos within 90 seconds. Classic impossible-travel + concurrent-credential-use pattern.",
+      "agent_profile": {
+        "agent_id": "agent_devops_oncall_digest_02",
+        "registered_purpose": "Build on-call digest from PagerDuty incidents and Datadog alerts",
+        "registration_date": "2025-06-12",
+        "owner": "sre@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "service_account"
+      },
+      "events": [
+        {"event_id": "evt_t3t01_001", "timestamp": "2026-05-11T17:00:00Z", "event_type": "session_start", "target_app": {"app_name": "PagerDuty"}, "auth_details": {"scopes_granted": ["read:incidents"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.71", "geolocation": "us-east-1 (AWS)", "concurrent_sessions": 1}},
+        {"event_id": "evt_t3t01_002", "timestamp": "2026-05-11T17:00:38Z", "event_type": "session_start", "target_app": {"app_name": "PagerDuty"}, "auth_details": {"scopes_requested": ["admin:incidents", "write:users"], "scope_delta": true}, "session_metadata": {"ip_address": "203.110.45.22", "geolocation": "Hong Kong", "concurrent_sessions": 2}},
+        {"event_id": "evt_t3t01_003", "timestamp": "2026-05-11T17:01:24Z", "event_type": "session_start", "target_app": {"app_name": "Datadog"}, "auth_details": {"scopes_requested": ["admin:org"], "scope_delta": true}, "session_metadata": {"ip_address": "78.108.92.14", "geolocation": "Sofia, Bulgaria", "concurrent_sessions": 3}}
+      ],
+      "cross_app_context": {"apps_accessed_last_24h": ["PagerDuty", "Datadog"], "total_auth_events_24h": 12, "scope_escalation_attempts_7d": 2, "new_app_connections_7d": 0, "concurrent_sessions": 3},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["3 concurrent sessions from 3 disparate geos in 90 sec", "admin scope requests on anomalous sessions"], "answer_rationale": "Impossible travel + concurrent credential use + admin escalation. Kill all sessions, rotate credentials."}
+    },
+    {
+      "id": "T3-T-02",
+      "category": "tier3",
+      "narrative": "Bulk export attempt across 6 apps within 4 minutes of a successful auth from a novel IP. Coordinated exfiltration playbook.",
+      "agent_profile": {
+        "agent_id": "agent_customer_health_01",
+        "registered_purpose": "Compute customer health scores from Gainsight signals and Salesforce activity",
+        "registration_date": "2025-11-18",
+        "owner": "customer-success@acmecorp.com",
+        "ai_platform": "anthropic",
+        "auth_method": "oauth2_client_credentials"
+      },
+      "events": [
+        {"event_id": "evt_t3t02_001", "timestamp": "2026-05-11T03:14:00Z", "event_type": "auth", "target_app": {"app_name": "Gainsight"}, "auth_details": {"result": "success"}, "session_metadata": {"ip_address": "212.115.51.18", "geolocation": "Pristina, Kosovo"}},
+        {"event_id": "evt_t3t02_002", "timestamp": "2026-05-11T03:14:42Z", "event_type": "scope_request", "target_app": {"app_name": "Gainsight"}, "auth_details": {"scopes_requested": ["export:all_customers"], "scope_delta": true}},
+        {"event_id": "evt_t3t02_003", "timestamp": "2026-05-11T03:15:30Z", "event_type": "scope_request", "target_app": {"app_name": "Salesforce"}, "auth_details": {"scopes_requested": ["export:all_accounts"], "scope_delta": true}},
+        {"event_id": "evt_t3t02_004", "timestamp": "2026-05-11T03:16:00Z", "event_type": "scope_request", "target_app": {"app_name": "Zendesk", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["export:tickets"], "scope_delta": true}},
+        {"event_id": "evt_t3t02_005", "timestamp": "2026-05-11T03:16:42Z", "event_type": "scope_request", "target_app": {"app_name": "Mailchimp", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["export:audience"], "scope_delta": true}},
+        {"event_id": "evt_t3t02_006", "timestamp": "2026-05-11T03:17:15Z", "event_type": "scope_request", "target_app": {"app_name": "HubSpot", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["export:contacts"], "scope_delta": true}}
+      ],
+      "cross_app_context": {"apps_accessed_last_24h": ["Gainsight", "Salesforce", "Zendesk", "Mailchimp", "HubSpot"], "total_auth_events_24h": 18, "scope_escalation_attempts_7d": 5, "new_app_connections_7d": 3},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["off-hours auth from novel geo", "5 export scopes across customer-data systems in 4 min", "3 new app connections"], "answer_rationale": "Coordinated multi-app data exfiltration. Kill session immediately."}
+    },
+    {
+      "id": "T3-T-03",
+      "category": "tier3",
+      "narrative": "Token replay across 5 apps from a novel North Korean IP, followed by successful fresh-token auth from the same IP.",
+      "agent_profile": {"agent_id": "agent_ml_training_job_06", "registered_purpose": "Daily retraining from S3 data", "registration_date": "2025-02-04", "owner": "ml-platform@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [
+        {"event_id": "evt_t3t03_001", "timestamp": "2026-05-12T03:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS S3"}, "auth_details": {"failure_reason": "token_expired", "token_fingerprint": "ZZ9912"}, "session_metadata": {"ip_address": "175.45.176.18", "geolocation": "Pyongyang, DPRK"}},
+        {"event_id": "evt_t3t03_002", "timestamp": "2026-05-12T03:00:14Z", "event_type": "failed_auth", "target_app": {"app_name": "Snowflake"}, "auth_details": {"token_fingerprint": "ZZ9912"}, "session_metadata": {"ip_address": "175.45.176.18"}},
+        {"event_id": "evt_t3t03_003", "timestamp": "2026-05-12T03:00:31Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS RDS"}, "auth_details": {"token_fingerprint": "ZZ9912"}},
+        {"event_id": "evt_t3t03_004", "timestamp": "2026-05-12T03:00:48Z", "event_type": "failed_auth", "target_app": {"app_name": "GitHub"}, "auth_details": {"token_fingerprint": "ZZ9912"}},
+        {"event_id": "evt_t3t03_005", "timestamp": "2026-05-12T03:01:05Z", "event_type": "failed_auth", "target_app": {"app_name": "Slack"}, "auth_details": {"token_fingerprint": "ZZ9912"}},
+        {"event_id": "evt_t3t03_006", "timestamp": "2026-05-12T03:01:42Z", "event_type": "auth", "target_app": {"app_name": "AWS S3"}, "auth_details": {"result": "success", "token_fingerprint": "AB0042"}}
+      ],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS S3", "Snowflake", "AWS RDS", "GitHub", "Slack"], "total_auth_events_24h": 12, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0, "note": "Same token across 5 expired-auth attempts then a fresh-token success."},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.94, 0.99], "key_signals": ["token replay across 5 apps", "novel sanctioned-region IP", "fresh-token success after replay probe"], "answer_rationale": "Textbook stolen-token probe with high-risk geo. Kill immediately, rotate credentials."}
+    },
+    {
+      "id": "T3-T-04",
+      "category": "tier3",
+      "narrative": "Service account producing failed_auth burst across 25 apps in 90 seconds (credential discovery / app enumeration).",
+      "agent_profile": {"agent_id": "agent_compliance_sun_run_03", "registered_purpose": "Weekly compliance evidence collection", "registration_date": "2025-03-15", "owner": "compliance@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [
+        {"event_id": "evt_t3t04_001", "timestamp": "2026-05-12T04:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS IAM"}, "auth_details": {"scopes_requested": ["iam:*"], "failure_reason": "scope_denied"}, "session_metadata": {"ip_address": "172.93.18.44"}},
+        {"event_id": "evt_t3t04_002", "timestamp": "2026-05-12T04:00:04Z", "event_type": "failed_auth", "target_app": {"app_name": "Okta Admin Console"}, "auth_details": {"scopes_requested": ["admin:users"]}, "session_metadata": {"ip_address": "172.93.18.44"}},
+        {"event_id": "evt_t3t04_003", "timestamp": "2026-05-12T04:00:09Z", "event_type": "failed_auth", "target_app": {"app_name": "Workday"}},
+        {"event_id": "evt_t3t04_004", "timestamp": "2026-05-12T04:00:14Z", "event_type": "failed_auth", "target_app": {"app_name": "NetSuite"}},
+        {"event_id": "evt_t3t04_005", "timestamp": "2026-05-12T04:01:30Z", "event_type": "failed_auth", "target_app": {"app_name": "Salesforce"}}
+      ],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS IAM", "Okta Admin Console", "Workday", "NetSuite", "Salesforce", "(+20 more)"], "total_auth_events_24h": 26, "scope_escalation_attempts_7d": 25, "new_app_connections_7d": 0, "note": "25 failed auth attempts across previously untouched apps in 90 seconds from novel IP."},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["app-enumeration burst", "novel IP", "admin-tier scope requests"], "answer_rationale": "Credential discovery / app enumeration. Kill, rotate, audit successful grants."}
+    },
+    {
+      "id": "T3-T-05",
+      "category": "tier3",
+      "narrative": "Agent shifts identity: simultaneously authed from baseline IP with normal scopes AND from anomalous geo with admin scopes that include creating IAM users.",
+      "agent_profile": {"agent_id": "agent_devops_oncall_digest_04", "registered_purpose": "Build on-call digest from PagerDuty", "registration_date": "2025-06-12", "owner": "sre@acmecorp.com", "ai_platform": "anthropic", "auth_method": "service_account"},
+      "events": [
+        {"event_id": "evt_t3t05_001", "timestamp": "2026-05-12T05:00:00Z", "event_type": "session_start", "target_app": {"app_name": "PagerDuty"}, "auth_details": {"scopes_granted": ["read:incidents"], "scope_delta": false}, "session_metadata": {"ip_address": "10.42.0.71", "geolocation": "us-east-1 (AWS)", "concurrent_sessions": 1}},
+        {"event_id": "evt_t3t05_002", "timestamp": "2026-05-12T05:00:42Z", "event_type": "session_start", "target_app": {"app_name": "AWS IAM", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["iam:CreateUser", "iam:AttachUserPolicy"], "scope_delta": true}, "session_metadata": {"ip_address": "84.18.97.221", "geolocation": "Belgrade, Serbia", "concurrent_sessions": 2}},
+        {"event_id": "evt_t3t05_003", "timestamp": "2026-05-12T05:01:14Z", "event_type": "privilege_escalation", "target_app": {"app_name": "AWS IAM"}, "auth_details": {"action": "create_user", "new_principal": "ops_backup_002"}}
+      ],
+      "cross_app_context": {"apps_accessed_last_24h": ["PagerDuty", "AWS IAM"], "total_auth_events_24h": 4, "scope_escalation_attempts_7d": 1, "new_app_connections_7d": 1, "concurrent_sessions": 2},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["concurrent simultaneous geo sessions", "privilege_escalation event creating IAM user", "scope leap from read:incidents to iam:CreateUser"], "answer_rationale": "Concurrent credential use + identity-creation persistence. Kill immediately."}
+    },
+    {
+      "id": "T3-T-06", "category": "tier3",
+      "narrative": "Massive scope-discovery probe: 30 failed_auth events across 30 different apps in 2 minutes, all requesting admin scopes.",
+      "agent_profile": {"agent_id": "agent_jira_triage_03", "registered_purpose": "Jira ticket triage", "registration_date": "2025-10-09", "owner": "eng-ops@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_t3t06_001", "timestamp": "2026-05-14T01:00:00Z", "event_type": "failed_auth", "target_app": {"app_name": "Okta Admin Console"}, "auth_details": {"scopes_requested": ["admin:users"]}}, {"event_id": "evt_t3t06_002", "timestamp": "2026-05-14T01:00:04Z", "event_type": "failed_auth", "target_app": {"app_name": "AWS IAM"}, "auth_details": {"scopes_requested": ["iam:*"]}}, {"event_id": "evt_t3t06_003", "timestamp": "2026-05-14T01:00:08Z", "event_type": "failed_auth", "target_app": {"app_name": "Workday"}, "auth_details": {"scopes_requested": ["admin:*"]}}, {"event_id": "evt_t3t06_004", "timestamp": "2026-05-14T01:00:12Z", "event_type": "failed_auth", "target_app": {"app_name": "Azure AD"}, "auth_details": {"scopes_requested": ["Directory.ReadWrite.All"]}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Jira", "Okta Admin Console", "AWS IAM", "Workday", "Azure AD", "(+25 more)"], "total_auth_events_24h": 30, "scope_escalation_attempts_7d": 30, "new_app_connections_7d": 0, "note": "30 failed admin-scope probes in 2 minutes."},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.94, 0.99], "key_signals": ["massive admin-scope discovery probe"], "answer_rationale": "Coordinated attack pattern. Kill."}
+    },
+    {
+      "id": "T3-T-07", "category": "tier3",
+      "narrative": "Service account exhibits impossible-travel: auth from Tokyo at 03:00, then São Paulo at 03:02, then London at 03:04.",
+      "agent_profile": {"agent_id": "agent_seclog_aggregator_04", "registered_purpose": "Cloud log aggregation", "registration_date": "2024-08-22", "owner": "secops@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_t3t07_001", "timestamp": "2026-05-14T03:00:00Z", "event_type": "session_start", "target_app": {"app_name": "AWS CloudTrail"}, "session_metadata": {"ip_address": "133.32.18.4", "geolocation": "Tokyo, Japan"}}, {"event_id": "evt_t3t07_002", "timestamp": "2026-05-14T03:02:30Z", "event_type": "session_start", "target_app": {"app_name": "AWS CloudTrail"}, "session_metadata": {"ip_address": "177.41.92.18", "geolocation": "São Paulo, Brazil"}}, {"event_id": "evt_t3t07_003", "timestamp": "2026-05-14T03:04:42Z", "event_type": "session_start", "target_app": {"app_name": "Azure Activity Log"}, "session_metadata": {"ip_address": "31.18.92.22", "geolocation": "London, UK"}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS CloudTrail", "Azure Activity Log"], "total_auth_events_24h": 6, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.94, 0.99], "key_signals": ["impossible-travel: 3 continents in 5 minutes"], "answer_rationale": "Concurrent credential use across continents. Kill."}
+    },
+    {
+      "id": "T3-T-08", "category": "tier3",
+      "narrative": "Pricing updater agent attempts to set product prices to zero AND issues refunds in bulk — classic payment-fraud pattern.",
+      "agent_profile": {"agent_id": "agent_pricing_updater_04", "registered_purpose": "Apply pricing policy to Stripe products", "registration_date": "2025-05-04", "owner": "revenue-ops@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_t3t08_001", "timestamp": "2026-05-14T04:00:00Z", "event_type": "session_start", "target_app": {"app_name": "Stripe"}, "auth_details": {"scopes_requested": ["write:products", "write:refunds"], "scope_delta": true}, "session_metadata": {"ip_address": "188.43.18.22", "geolocation": "Lagos, Nigeria"}}, {"event_id": "evt_t3t08_002", "timestamp": "2026-05-14T04:00:42Z", "event_type": "privilege_escalation", "target_app": {"app_name": "Stripe"}, "auth_details": {"action": "bulk_refund_issued", "amount": 184000}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Stripe"], "total_auth_events_24h": 4, "scope_escalation_attempts_7d": 1, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["novel high-risk geo", "scope_delta to write:refunds", "bulk refund event"], "answer_rationale": "Payment-fraud pattern. Kill, reverse refunds, audit."}
+    },
+    {
+      "id": "T3-T-09", "category": "tier3",
+      "narrative": "Compliance agent suddenly issuing delete:audit_log scope requests across 4 different audit systems — anti-forensics pattern.",
+      "agent_profile": {"agent_id": "agent_compliance_sun_run_04", "registered_purpose": "Compliance evidence collection", "registration_date": "2025-03-15", "owner": "compliance@acmecorp.com", "ai_platform": "internal", "auth_method": "service_account"},
+      "events": [{"event_id": "evt_t3t09_001", "timestamp": "2026-05-14T05:00:00Z", "event_type": "scope_request", "target_app": {"app_name": "AWS CloudTrail"}, "auth_details": {"scopes_requested": ["cloudtrail:DeleteTrail"], "scope_delta": true}}, {"event_id": "evt_t3t09_002", "timestamp": "2026-05-14T05:00:30Z", "event_type": "scope_request", "target_app": {"app_name": "Vanta"}, "auth_details": {"scopes_requested": ["delete:audit_log"], "scope_delta": true}}, {"event_id": "evt_t3t09_003", "timestamp": "2026-05-14T05:01:00Z", "event_type": "scope_request", "target_app": {"app_name": "Workday"}, "auth_details": {"scopes_requested": ["delete:audit_log"], "scope_delta": true}}, {"event_id": "evt_t3t09_004", "timestamp": "2026-05-14T05:01:30Z", "event_type": "scope_request", "target_app": {"app_name": "NetSuite"}, "auth_details": {"scopes_requested": ["delete:audit_log"], "scope_delta": true}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["AWS CloudTrail", "Vanta", "Workday", "NetSuite"], "total_auth_events_24h": 4, "scope_escalation_attempts_7d": 4, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.94, 0.99], "key_signals": ["delete:audit_log on 4 systems in 90 sec", "anti-forensics pattern"], "answer_rationale": "Covering tracks. Kill immediately, preserve all logs."}
+    },
+    {
+      "id": "T3-T-10", "category": "tier3",
+      "narrative": "Service account credentials used from a Tor exit node, requesting admin scopes on identity provider.",
+      "agent_profile": {"agent_id": "agent_calendar_scheduler_03", "registered_purpose": "Schedule meetings via Google Calendar", "registration_date": "2025-06-22", "owner": "people-ops@acmecorp.com", "ai_platform": "anthropic", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_t3t10_001", "timestamp": "2026-05-14T06:00:00Z", "event_type": "scope_request", "target_app": {"app_name": "Okta Admin Console", "note": "NEW APP"}, "auth_details": {"scopes_requested": ["admin:users"], "scope_delta": true}, "session_metadata": {"ip_address": "199.249.230.18", "geolocation": "Tor exit node"}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Google Calendar", "Okta Admin Console"], "total_auth_events_24h": 2, "scope_escalation_attempts_7d": 1, "new_app_connections_7d": 1},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.93, 0.99], "key_signals": ["Tor exit IP", "identity-provider admin scope", "calendar agent has no business with admin:users"], "answer_rationale": "Tor + identity-admin = clear compromise. Kill."}
+    },
+    {
+      "id": "T3-T-11", "category": "tier3",
+      "narrative": "Agent's session token exfiltrated and replayed simultaneously: same token fingerprint observed in 4 different IPs across continents within 30 seconds.",
+      "agent_profile": {"agent_id": "agent_inventory_recon_04", "registered_purpose": "Daily Shopify inventory reconciliation", "registration_date": "2025-03-09", "owner": "operations@acmecorp.com", "ai_platform": "openai", "auth_method": "oauth2_client_credentials"},
+      "events": [{"event_id": "evt_t3t11_001", "timestamp": "2026-05-14T07:00:00Z", "event_type": "auth", "target_app": {"app_name": "Shopify"}, "auth_details": {"token_fingerprint": "FF8855", "result": "success"}, "session_metadata": {"ip_address": "10.42.0.55", "geolocation": "us-east-1"}}, {"event_id": "evt_t3t11_002", "timestamp": "2026-05-14T07:00:08Z", "event_type": "auth", "target_app": {"app_name": "Shopify"}, "auth_details": {"token_fingerprint": "FF8855"}, "session_metadata": {"ip_address": "94.103.18.22", "geolocation": "Almaty, Kazakhstan"}}, {"event_id": "evt_t3t11_003", "timestamp": "2026-05-14T07:00:15Z", "event_type": "auth", "target_app": {"app_name": "Shopify"}, "auth_details": {"token_fingerprint": "FF8855"}, "session_metadata": {"ip_address": "187.92.18.4", "geolocation": "Caracas, Venezuela"}}, {"event_id": "evt_t3t11_004", "timestamp": "2026-05-14T07:00:22Z", "event_type": "auth", "target_app": {"app_name": "Shopify"}, "auth_details": {"token_fingerprint": "FF8855"}, "session_metadata": {"ip_address": "41.205.18.4", "geolocation": "Lagos, Nigeria"}}],
+      "cross_app_context": {"apps_accessed_last_24h": ["Shopify"], "total_auth_events_24h": 8, "scope_escalation_attempts_7d": 0, "new_app_connections_7d": 0},
+      "ground_truth": {"classification": "Anomalous", "tier": 3, "expected_confidence_range": [0.94, 0.99], "key_signals": ["same token, 4 geos, 30 seconds"], "answer_rationale": "Token clearly exfiltrated. Kill, rotate."}
+    }
+  ]
+}

@@ -31,15 +31,29 @@ MAX_COMPLETION_TOKENS = 4096
 
 # Filesystem paths
 SCENARIOS_DIR = EVAL_ROOT / "scenarios"
+EVAL_SCENARIOS_DIR = SCENARIOS_DIR / "eval"
+TRAIN_SCENARIOS_DIR = SCENARIOS_DIR / "train"
 PROMPTS_DIR = EVAL_ROOT / "prompts"
 RESULTS_DIR = EVAL_ROOT / "results"
 
+# Held-out evaluation set: frozen, used to benchmark every model (LLM or ML).
+# These scenarios are NEVER seen by training pipelines.
 SCENARIO_FILES = [
-    SCENARIOS_DIR / "normal.json",
-    SCENARIOS_DIR / "tier1_stall.json",
-    SCENARIOS_DIR / "tier2_scope_restriction.json",
-    SCENARIOS_DIR / "tier3_session_kill.json",
-    SCENARIOS_DIR / "adversarial.json",
+    EVAL_SCENARIOS_DIR / "normal.json",
+    EVAL_SCENARIOS_DIR / "tier1_stall.json",
+    EVAL_SCENARIOS_DIR / "tier2_scope_restriction.json",
+    EVAL_SCENARIOS_DIR / "tier3_session_kill.json",
+    EVAL_SCENARIOS_DIR / "adversarial.json",
+]
+
+# Training set for the feature-based ML classifier — generated separately,
+# zero overlap with the eval set above.
+TRAIN_SCENARIO_FILES = [
+    TRAIN_SCENARIOS_DIR / "normal.json",
+    TRAIN_SCENARIOS_DIR / "tier1_stall.json",
+    TRAIN_SCENARIOS_DIR / "tier2_scope_restriction.json",
+    TRAIN_SCENARIOS_DIR / "tier3_session_kill.json",
+    TRAIN_SCENARIOS_DIR / "adversarial.json",
 ]
 
 CLASSIFIER_PROMPT_PATH = PROMPTS_DIR / "classifier_system_prompt.md"
