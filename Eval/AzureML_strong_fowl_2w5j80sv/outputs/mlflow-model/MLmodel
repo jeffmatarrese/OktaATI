@@ -1,0 +1,48 @@
+artifact_path: outputs/mlflow-model
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.10.19
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: pickle
+    sklearn_version: 1.5.1
+metadata:
+  azureml.base_image: mcr.microsoft.com/azureml/curated/ai-ml-automl:41
+  azureml.engine: automl
+mlflow_version: 2.15.1
+model_size_bytes: 2731853
+model_uuid: f921a6fc42494e11968014c019849809
+run_id: green_holiday_vgwb1gknhq_49
+signature:
+  inputs: '[{"type": "double", "name": "event_count", "required": true}, {"type":
+    "double", "name": "unique_apps_in_events", "required": true}, {"type": "double",
+    "name": "unique_event_types", "required": true}, {"type": "double", "name": "failed_auth_count",
+    "required": true}, {"type": "double", "name": "scope_request_count", "required":
+    true}, {"type": "double", "name": "privilege_escalation_count", "required": true},
+    {"type": "double", "name": "token_refresh_count", "required": true}, {"type":
+    "double", "name": "has_scope_delta", "required": true}, {"type": "double", "name":
+    "total_scopes_seen", "required": true}, {"type": "double", "name": "unique_scopes",
+    "required": true}, {"type": "double", "name": "has_admin_scope", "required": true},
+    {"type": "double", "name": "has_write_scope", "required": true}, {"type": "double",
+    "name": "unique_geos", "required": true}, {"type": "double", "name": "unique_ips",
+    "required": true}, {"type": "double", "name": "max_concurrent_sessions", "required":
+    true}, {"type": "double", "name": "has_anonymizer_geo", "required": true}, {"type":
+    "double", "name": "apps_accessed_last_24h_count", "required": true}, {"type":
+    "double", "name": "total_auth_events_24h", "required": true}, {"type": "double",
+    "name": "scope_escalation_attempts_7d", "required": true}, {"type": "double",
+    "name": "new_app_connections_7d", "required": true}, {"type": "double", "name":
+    "agent_age_days", "required": true}, {"type": "double", "name": "auth_method_service_account",
+    "required": true}, {"type": "double", "name": "auth_method_oauth_client_credentials",
+    "required": true}, {"type": "double", "name": "integration_signals_present", "required":
+    true}, {"type": "double", "name": "crud_volume_ratio", "required": true}, {"type":
+    "double", "name": "data_volume_high", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "str", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2026-05-12 02:21:16.542300'

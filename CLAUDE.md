@@ -19,7 +19,10 @@ There is no top-level build, test, or lint — each subproject is independent.
 Python pipeline against Azure AI Foundry. See `Eval/README.md` for the full setup.
 
 ### Architecture
-- **Scenarios** (`Eval/scenarios/*.json`, 50 total across 5 files) — hand-authored telemetry payloads with ground-truth answer keys. Distribution: 15 Normal, 13 Tier 1, 10 Tier 2, 5 Tier 3, 7 Adversarial. ~40% intentionally omit `integration_signals` to test graceful degradation.
+- **Scenarios** — hand-authored telemetry payloads with ground-truth answer keys, split into two non-overlapping sets:
+  - `Eval/scenarios/eval/*.json` — **50 frozen scenarios** (15/13/10/5/7 across Normal/T1/T2/T3/Adversarial). This is the held-out test set used to benchmark every model (LLM or ML). **Never train on these.**
+  - `Eval/scenarios/train/*.json` — **200 training scenarios** (60/50/40/20/30 — same distribution shape) used to train the feature-based ML classifier.
+  - ~40% of scenarios intentionally omit `integration_signals` to test graceful degradation.
 - **Prompts** (`Eval/prompts/*.md`) — the classifier system prompt enforces a strict JSON output contract; the judge system prompt enforces a scoring rubric over both verifiable (binary) and semi-verifiable (1–5) dimensions.
 - **Pipeline** (`Eval/src/`):
   - `run_eval.py` → loads scenarios, strips ground truth, sends to classifier, then sends `(telemetry, model_output, ground_truth)` to the judge.
@@ -69,3 +72,17 @@ Path alias: `@/` → `src/` (configured in `tsconfig.json` and `vite.config.ts`)
 - **The Reference doc is authoritative.** When the framework spec and code disagree, the doc wins unless we've explicitly decided to deviate (in which case update both).
 - **Ground truth lives with the scenario.** Do not pass ground truth to the classifier (only the judge sees it). `run_eval.py` enforces this via `scenario_to_classifier_payload()`.
 - **Dry-run mode is the first-line smoke test.** Always validate pipeline changes with `--dry-run` before burning Azure tokens.
+- **Commits: no `Co-Authored-By: Claude` trailer.** User preference.
+- **gpt-5.4 reasoning-model API contract.** Calls use `max_completion_tokens` (not `max_tokens`), no `temperature` parameter, and `api_version=2024-12-01-preview`. These were deliberately set — don't restore the older params if you see them missing.
+
+## Current phase
+
+Phase 1 (LLM-as-classifier baseline) complete. First live run: 82% classification accuracy, 0% FPR, T1 accuracy only 30.8% — the bare-metal model under-tiers subtle single-signal anomalies. Full writeup in `Eval/results/eval_run_20260510_225418_analysis.md`.
+
+Phase 2 in progress: train a feature-based ML classifier and compare head-to-head against gpt-5.4-nano on the frozen 50-scenario eval set. Three-stage pipeline:
+
+1. ✅ Claude authored 200 training scenarios in `Eval/scenarios/train/`
+2. ⏳ **Next:** GPT-5.4 cross-check script to audit the 200 for realism + eval-set contamination
+3. Feature extractor (~18 numeric/boolean features per scenario) → CSV
+4. Azure ML Studio AutoML on training CSV → predictions on the frozen eval CSV
+5. Same scorecard format → direct comparison vs the baseline run

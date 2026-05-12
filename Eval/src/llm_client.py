@@ -51,6 +51,25 @@ class LLMClient:
         )
         return _parse_json(resp.choices[0].message.content or "{}")
 
+    def audit(self, system_prompt: str, scenario: dict[str, Any]) -> dict[str, Any]:
+        """Call the judge-tier deployment to audit a training scenario for realism,
+        consistency, and ground-truth fit. Returns parsed JSON dict.
+        """
+        if self.dry_run:
+            return _stub_audit_output(scenario)
+
+        user_content = json.dumps(scenario, indent=2)
+        resp = self._client.chat.completions.create(  # type: ignore[union-attr]
+            model=config.JUDGE_DEPLOYMENT,
+            max_completion_tokens=config.MAX_COMPLETION_TOKENS,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+        )
+        return _parse_json(resp.choices[0].message.content or "{}")
+
     def judge(
         self,
         system_prompt: str,
@@ -134,6 +153,31 @@ def _stub_classifier_output(scenario_payload: dict[str, Any]) -> dict[str, Any]:
         "analyst_guidance": (
             "[DRY-RUN STUB] Verify agent owner intent and review recent scope changes."
         ),
+    }
+
+
+def _stub_audit_output(scenario: dict[str, Any]) -> dict[str, Any]:
+    """Heuristic stub audit: mostly 'keep' verdicts with occasional 'revise'."""
+    rng = random.Random(scenario.get("id", "x"))
+    realism = rng.choice([3, 4, 4, 4, 5, 5])
+    consistency = rng.choice([3, 4, 4, 4, 5, 5])
+    fit = rng.choice([3, 4, 4, 5, 5])
+    diversity = rng.choice([2, 3, 3, 4, 4])
+    fits_label = fit >= 4
+    verdict = "keep" if fits_label and consistency >= 4 else rng.choice(["revise", "keep"])
+    issues = [] if verdict == "keep" else ["[DRY-RUN STUB] simulated revise flag"]
+    return {
+        "realism": {"score": realism, "justification": "[DRY-RUN STUB]"},
+        "internal_consistency": {"score": consistency, "justification": "[DRY-RUN STUB]"},
+        "ground_truth_fit": {
+            "score": fit,
+            "fits_label": fits_label,
+            "justification": "[DRY-RUN STUB]",
+        },
+        "diversity_signal": {"score": diversity, "justification": "[DRY-RUN STUB]"},
+        "issues": issues,
+        "overall_verdict": verdict,
+        "verdict_reason": "[DRY-RUN STUB] stub verdict for pipeline validation",
     }
 
 

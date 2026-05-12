@@ -58,3 +58,4 @@ TRAIN_SCENARIO_FILES = [
 
 CLASSIFIER_PROMPT_PATH = PROMPTS_DIR / "classifier_system_prompt.md"
 JUDGE_PROMPT_PATH = PROMPTS_DIR / "judge_system_prompt.md"
+CROSS_CHECK_PROMPT_PATH = PROMPTS_DIR / "cross_check_system_prompt.md"
