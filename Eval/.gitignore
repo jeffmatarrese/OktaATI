@@ -3,7 +3,18 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.DS_Store
+
+# Eval pipeline outputs are gitignored by default — they regenerate from `python -m src.run_eval`
+# and similar. Keep individual canonical runs (cited by WRITEUP.md) by allowlisting them below.
 results/*.json
 results/*.md
 results/*.csv
 !results/.gitkeep
+!results/eval_run_20260510_225418.json
+!results/eval_run_20260510_225418.md
+!results/eval_run_20260510_225418.csv
+!results/eval_run_20260510_225418_analysis.md
+!results/cross_check_20260511_135335.json
+!results/cross_check_20260511_135335.md
+!results/cross_check_20260511_135335.csv

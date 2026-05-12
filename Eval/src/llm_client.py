@@ -51,6 +51,23 @@ class LLMClient:
         )
         return _parse_json(resp.choices[0].message.content or "{}")
 
+    def generate(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
+        """Call the judge-tier deployment to generate a new training scenario.
+        Returns the parsed JSON object."""
+        if self.dry_run:
+            return _stub_generated_scenario(user_prompt)
+
+        resp = self._client.chat.completions.create(  # type: ignore[union-attr]
+            model=config.JUDGE_DEPLOYMENT,
+            max_completion_tokens=config.MAX_COMPLETION_TOKENS,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        return _parse_json(resp.choices[0].message.content or "{}")
+
     def audit(self, system_prompt: str, scenario: dict[str, Any]) -> dict[str, Any]:
         """Call the judge-tier deployment to audit a training scenario for realism,
         consistency, and ground-truth fit. Returns parsed JSON dict.
@@ -153,6 +170,61 @@ def _stub_classifier_output(scenario_payload: dict[str, Any]) -> dict[str, Any]:
         "analyst_guidance": (
             "[DRY-RUN STUB] Verify agent owner intent and review recent scope changes."
         ),
+    }
+
+
+def _stub_generated_scenario(user_prompt: str) -> dict[str, Any]:
+    """Heuristic stub: return a minimal valid scenario carrying the assigned id."""
+    # crude prompt parse — sufficient for dry-run plumbing
+    import re
+
+    m_id = re.search(r"id[:=]\s*([A-Z0-9-]+)", user_prompt)
+    sid = m_id.group(1) if m_id else "DRY-RUN-001"
+    m_cat = re.search(r"category[:=]\s*([a-z0-9]+)", user_prompt)
+    cat = m_cat.group(1) if m_cat else "normal"
+
+    cls, tier = "Normal", None
+    if cat == "tier1":
+        cls, tier = "Anomalous", 1
+    elif cat == "tier2":
+        cls, tier = "Anomalous", 2
+    elif cat == "tier3":
+        cls, tier = "Anomalous", 3
+    return {
+        "id": sid,
+        "category": cat,
+        "narrative": "[DRY-RUN STUB] Synthetic scenario for pipeline validation.",
+        "agent_profile": {
+            "agent_id": f"agent_dryrun_{sid.lower().replace('-', '_')}",
+            "registered_purpose": "stub",
+            "registration_date": "2025-01-01",
+            "owner": "stub@acmecorp.com",
+            "ai_platform": "internal",
+            "auth_method": "service_account",
+        },
+        "events": [
+            {
+                "event_id": f"evt_{sid.lower().replace('-', '_')}_001",
+                "timestamp": "2026-05-11T12:00:00Z",
+                "event_type": "session_start",
+                "target_app": {"app_name": "DryRunApp"},
+                "auth_details": {"scopes_granted": ["read:stub"], "scope_delta": False},
+            }
+        ],
+        "cross_app_context": {
+            "apps_accessed_last_24h": ["DryRunApp"],
+            "total_auth_events_24h": 1,
+            "scope_escalation_attempts_7d": 0,
+            "new_app_connections_7d": 0,
+        },
+        "integration_signals": None,
+        "ground_truth": {
+            "classification": cls,
+            "tier": tier,
+            "expected_confidence_range": [0.6, 0.9],
+            "key_signals": ["[DRY-RUN STUB]"],
+            "answer_rationale": "[DRY-RUN STUB] stub rationale",
+        },
     }
 
 

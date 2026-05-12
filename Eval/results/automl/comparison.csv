@@ -1,0 +1,13 @@
+class,model,n,correct,recall
+Normal,gpt-5.4-nano,17,17,1.0
+Normal,strong_fowl (200 train),17,12,0.7058823529411765
+Normal,bold_beard (498 train),17,12,0.7058823529411765
+T1,gpt-5.4-nano,15,5,0.3333333333333333
+T1,strong_fowl (200 train),15,7,0.4666666666666667
+T1,bold_beard (498 train),15,11,0.7333333333333333
+T2,gpt-5.4-nano,13,13,1.0
+T2,strong_fowl (200 train),13,10,0.7692307692307693
+T2,bold_beard (498 train),13,12,0.9230769230769231
+T3,gpt-5.4-nano,5,4,0.8
+T3,strong_fowl (200 train),5,5,1.0
+T3,bold_beard (498 train),5,3,0.6

@@ -1,0 +1,1 @@
+{"schema_type": "confusion_matrix", "schema_version": "1.0.0", "data": {"class_labels": ["Normal", "T1", "T2", "T3"], "matrix": [[12, 4, 0, 1], [7, 7, 1, 0], [0, 1, 10, 2], [0, 0, 0, 5]]}}

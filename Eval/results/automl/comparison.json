@@ -1,0 +1,219 @@
+{
+  "generated_at": "2026-05-12T07:22:14.877146",
+  "runs": [
+    {
+      "name": "strong_fowl (200 train)",
+      "run_id": "green_holiday_vgwb1gknhq_49",
+      "folder": "/Users/jeffmatarrese/Git/OktaATI/Eval/AzureML/strong_fowl",
+      "labels": [
+        "Normal",
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "matrix": [
+        [
+          12,
+          4,
+          0,
+          1
+        ],
+        [
+          7,
+          7,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          10,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "metrics": {
+        "n": 50,
+        "overall_accuracy": 0.68,
+        "correct": 34,
+        "per_class_recall": {
+          "Normal": {
+            "correct": 12,
+            "total": 17,
+            "recall": 0.7058823529411765
+          },
+          "T1": {
+            "correct": 7,
+            "total": 15,
+            "recall": 0.4666666666666667
+          },
+          "T2": {
+            "correct": 10,
+            "total": 13,
+            "recall": 0.7692307692307693
+          },
+          "T3": {
+            "correct": 5,
+            "total": 5,
+            "recall": 1.0
+          }
+        },
+        "binary_accuracy": 0.76,
+        "false_positive_rate": 0.29411764705882354,
+        "false_negative_rate": 0.21212121212121213,
+        "anomalous_recall": 0.7878787878787878,
+        "tn": 12,
+        "fp": 5,
+        "tp": 26,
+        "fn": 7
+      }
+    },
+    {
+      "name": "bold_beard (498 train)",
+      "run_id": "dynamic_ring_m8zb54",
+      "folder": "/Users/jeffmatarrese/Git/OktaATI/Eval/AzureML/bold_beard",
+      "labels": [
+        "Normal",
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "matrix": [
+        [
+          12,
+          5,
+          0,
+          0
+        ],
+        [
+          3,
+          11,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          12,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          3
+        ]
+      ],
+      "metrics": {
+        "n": 50,
+        "overall_accuracy": 0.76,
+        "correct": 38,
+        "per_class_recall": {
+          "Normal": {
+            "correct": 12,
+            "total": 17,
+            "recall": 0.7058823529411765
+          },
+          "T1": {
+            "correct": 11,
+            "total": 15,
+            "recall": 0.7333333333333333
+          },
+          "T2": {
+            "correct": 12,
+            "total": 13,
+            "recall": 0.9230769230769231
+          },
+          "T3": {
+            "correct": 3,
+            "total": 5,
+            "recall": 0.6
+          }
+        },
+        "binary_accuracy": 0.84,
+        "false_positive_rate": 0.29411764705882354,
+        "false_negative_rate": 0.09090909090909091,
+        "anomalous_recall": 0.9090909090909091,
+        "tn": 12,
+        "fp": 5,
+        "tp": 30,
+        "fn": 3
+      }
+    }
+  ],
+  "baseline": {
+    "source_run": "eval_run_20260510_225418",
+    "labels": [
+      "Normal",
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "matrix": [
+      [
+        17,
+        0,
+        0,
+        0
+      ],
+      [
+        9,
+        5,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        13,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        4
+      ]
+    ],
+    "metrics": {
+      "n": 50,
+      "overall_accuracy": 0.78,
+      "correct": 39,
+      "per_class_recall": {
+        "Normal": {
+          "correct": 17,
+          "total": 17,
+          "recall": 1.0
+        },
+        "T1": {
+          "correct": 5,
+          "total": 15,
+          "recall": 0.3333333333333333
+        },
+        "T2": {
+          "correct": 13,
+          "total": 13,
+          "recall": 1.0
+        },
+        "T3": {
+          "correct": 4,
+          "total": 5,
+          "recall": 0.8
+        }
+      },
+      "binary_accuracy": 0.82,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.2727272727272727,
+      "anomalous_recall": 0.7272727272727273,
+      "tn": 17,
+      "fp": 0,
+      "tp": 24,
+      "fn": 9
+    }
+  }
+}
