@@ -7,7 +7,7 @@ interface Props { agents: Agent[]; onOpen: (id: string) => void; }
 
 export function AgentDirectory({ agents, onOpen }: Props) {
   return (
-    <table className="w-full text-sm">
+    <table className="w-full min-w-[760px] text-sm">
       <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
         <tr className="border-b">
           <th className="px-3 py-2 text-left">Agent</th>

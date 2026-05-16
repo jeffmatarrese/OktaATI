@@ -10,7 +10,7 @@ describe('tier helpers', () => {
   });
 
   it('returns a tailwind text/bg color class per tier', () => {
-    expect(tierColorClass('T1')).toContain('amber');
+    expect(tierColorClass('T1')).toContain('yellow');
     expect(tierColorClass('T2')).toContain('orange');
     expect(tierColorClass('T3')).toContain('red');
     expect(tierColorClass('Normal')).toContain('slate');

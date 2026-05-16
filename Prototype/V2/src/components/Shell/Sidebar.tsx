@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { Bell, Shield, Users, FlaskConical, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const NAV = [
+export const NAV = [
   { to: '/',          label: 'Alerts',        Icon: Bell },
   { to: '/agents',    label: 'Agents',        Icon: Users },
   { to: '/lab',       label: 'Scenario Lab',  Icon: FlaskConical },

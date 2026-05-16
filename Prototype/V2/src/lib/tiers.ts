@@ -12,7 +12,7 @@ const LABELS: Record<Tier, string> = {
 
 const COLORS: Record<Tier, string> = {
   Normal: 'bg-slate-100 text-slate-700 border-slate-300',
-  T1: 'bg-amber-50 text-amber-800 border-amber-300',
+  T1: 'bg-yellow-50 text-yellow-800 border-yellow-300',
   T2: 'bg-orange-50 text-orange-800 border-orange-300',
   T3: 'bg-red-50 text-red-800 border-red-300',
 };

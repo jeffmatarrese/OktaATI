@@ -25,3 +25,6 @@ Eval/results/*.csv
 # Claude / superpowers session artifacts
 /CLAUDE.md
 /docs/
+
+# Stray node_modules at the repo root (subprojects have their own .gitignore)
+/node_modules/

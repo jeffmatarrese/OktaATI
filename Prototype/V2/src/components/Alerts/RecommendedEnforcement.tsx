@@ -3,18 +3,11 @@ import { CircleStop, ShieldAlert, Pause, CheckCircle2 } from 'lucide-react';
 import type { Enforcement } from '@/lib/tiers';
 import type { ActionTaken } from '@/data/alerts';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 const ICONS: Record<Exclude<Enforcement, 'None'>, JSX.Element> = {
   'Stall':          <Pause className="h-3.5 w-3.5" />,
   'Restrict Scope': <ShieldAlert className="h-3.5 w-3.5" />,
   'Session Kill':   <CircleStop className="h-3.5 w-3.5" />,
-};
-
-const BANNER_STYLE: Record<Exclude<Enforcement, 'None'>, string> = {
-  'Stall':          'border-amber-300 bg-amber-50 text-amber-900',
-  'Restrict Scope': 'border-orange-300 bg-orange-50 text-orange-900',
-  'Session Kill':   'border-red-300 bg-red-50 text-red-900',
 };
 
 const PAST_VERB: Record<Exclude<Enforcement, 'None'>, string> = {
@@ -34,13 +27,13 @@ export function RecommendedEnforcement({ recommended, rationale, actionTaken, on
   if (actionTaken) {
     return (
       <div className="space-y-2">
-        <div className={cn('flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-base font-semibold shadow-sm', BANNER_STYLE[actionTaken.enforcement])}>
-          <CheckCircle2 className="h-6 w-6 shrink-0" />
+        <div className="flex items-center gap-3 rounded-md border bg-muted/40 px-3 py-2">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
           <div className="flex flex-1 flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Action taken</span>
-            <span className="text-lg leading-tight">{PAST_VERB[actionTaken.enforcement]}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Resolved</span>
+            <span className="text-sm font-medium text-foreground">{PAST_VERB[actionTaken.enforcement]}</span>
           </div>
-          <span className="text-xs font-medium opacity-80">{formatDistanceToNow(new Date(actionTaken.takenAt))} ago</span>
+          <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(actionTaken.takenAt))} ago</span>
         </div>
         <p className="text-xs text-muted-foreground">{rationale}</p>
         <button
