@@ -2,6 +2,11 @@ import type { Tier, Enforcement } from '@/lib/tiers';
 
 export type CloudProvider = 'AWS' | 'GCP' | 'Azure';
 
+export interface ActionTaken {
+  enforcement: Exclude<Enforcement, 'None'>;
+  takenAt: string;       // ISO
+}
+
 export interface EvidenceStep {
   statement: string;
   signal: string;
@@ -58,6 +63,7 @@ export interface Alert {
   recommendationRationale: string;
   modelRunId: string;
   flash?: boolean;
+  actionTaken?: ActionTaken;
 }
 
 const now = Date.now();

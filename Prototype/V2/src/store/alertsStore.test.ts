@@ -34,4 +34,26 @@ describe('alertsStore', () => {
     useAlertsStore.getState().clearFlash('X-2');
     expect(useAlertsStore.getState().alerts[0].flash).toBeFalsy();
   });
+
+  it('applyAction sets actionTaken and appends a timeline event', () => {
+    const id = useAlertsStore.getState().alerts[0].id;
+    const beforeTimeline = useAlertsStore.getState().alerts[0].timeline.length;
+    useAlertsStore.getState().applyAction(id, 'Stall');
+    const after = useAlertsStore.getState().alerts[0];
+    expect(after.actionTaken?.enforcement).toBe('Stall');
+    expect(after.actionTaken?.takenAt).toBeTruthy();
+    expect(after.timeline.length).toBe(beforeTimeline + 1);
+    expect(after.timeline[after.timeline.length - 1].event).toBe('enforcement.applied');
+    expect(after.timeline[after.timeline.length - 1].detail).toMatch(/Stalled by analyst/);
+  });
+
+  it('applyAction is idempotent — escalating from Stall to Session Kill replaces the action', () => {
+    const id = useAlertsStore.getState().alerts[0].id;
+    useAlertsStore.getState().applyAction(id, 'Stall');
+    useAlertsStore.getState().applyAction(id, 'Session Kill');
+    const after = useAlertsStore.getState().alerts[0];
+    expect(after.actionTaken?.enforcement).toBe('Session Kill');
+    // Two timeline entries appended (one per call)
+    expect(after.timeline.filter((e) => e.event === 'enforcement.applied').length).toBe(2);
+  });
 });

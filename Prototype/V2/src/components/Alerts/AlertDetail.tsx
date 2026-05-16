@@ -7,6 +7,7 @@ import { IdentityCard } from './IdentityCard';
 import { RecommendedEnforcement } from './RecommendedEnforcement';
 import { AuditFooter } from './AuditFooter';
 import { Timer } from 'lucide-react';
+import { useAlertsStore } from '@/store/alertsStore';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -18,6 +19,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function AlertDetail({ alert }: { alert: Alert }) {
+  const applyAction = useAlertsStore((s) => s.applyAction);
   return (
     <article className="flex flex-col gap-6 p-6">
       <header className="space-y-2">
@@ -34,7 +36,12 @@ export function AlertDetail({ alert }: { alert: Alert }) {
             </span>
           </div>
         </div>
-        <RecommendedEnforcement enforcement={alert.enforcement} rationale={alert.recommendationRationale} />
+        <RecommendedEnforcement
+          recommended={alert.enforcement}
+          rationale={alert.recommendationRationale}
+          actionTaken={alert.actionTaken}
+          onAction={(e) => applyAction(alert.id, e)}
+        />
       </header>
 
       <Section title="Why this fired — deterministic evidence chain">
