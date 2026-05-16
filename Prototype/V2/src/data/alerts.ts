@@ -1,275 +1,352 @@
-export type Severity = "low" | "medium" | "high" | "critical";
-export type ActionType = "stall" | "restrict" | "terminate";
+import type { Tier, Enforcement } from '@/lib/tiers';
+
+export type CloudProvider = 'AWS' | 'GCP' | 'Azure';
+
+export interface EvidenceStep {
+  statement: string;
+  signal: string;
+  policy: string;
+  eventId: string;
+}
+
+export interface TimelineEvent {
+  ts: string;
+  event: string;
+  detail: string;
+  app?: string;
+}
+
+export interface CrossAppEvent {
+  app: string;
+  cloud?: CloudProvider;
+  event: string;
+  detail: string;
+  ts: string;
+}
+
+export interface IdentityCard {
+  serviceAccount: string;
+  tokenIssuer: string;
+  idp: string;
+  lastMfa: string;
+  authMethod: string;
+}
+
+export interface ChangeManagement {
+  status: 'approved' | 'none';
+  ticket?: string;
+}
 
 export interface Alert {
   id: string;
-  agent: string;
+  agentId: string;
+  agentName: string;
   agentType: string;
-  severity: Severity;
-  confidence: number;
+  tier: Exclude<Tier, 'Normal'>;
+  enforcement: Enforcement;
   title: string;
-  explanation: string;
-  reasons: string[];
-  timestamp: string;
-  apps: string[];
-  recommendedAction: ActionType;
-  recommendationReason: string;
-  verified: boolean;
-  telemetry: { ts: string; event: string; detail: string }[];
+  summary: string;
+  detectedAt: string;
+  mttc: string;
+  appsTouched: string[];
+  cloudPresence: CloudProvider[];
+  changeManagement: ChangeManagement;
+  evidenceChain: EvidenceStep[];
+  timeline: TimelineEvent[];
+  crossAppContext: CrossAppEvent[];
+  identity: IdentityCard;
+  recommendationRationale: string;
+  modelRunId: string;
+  flash?: boolean;
 }
 
 const now = Date.now();
 const ago = (m: number) => new Date(now - m * 60_000).toISOString();
 
-export const alerts: Alert[] = [
+export const seedAlerts: Alert[] = [
   {
-    id: "AGT-1042",
-    agent: "Salesforce Data Sync Agent",
-    agentType: "Integration Agent",
-    severity: "critical",
-    confidence: 96,
-    title: "Mass export of CRM records to unknown endpoint",
-    explanation:
-      "Agent initiated a bulk export of 42,318 contact records and attempted to POST them to an external endpoint not on the approved data egress list.",
-    reasons: [
-      "Volume is 38× the agent's 30-day baseline",
-      "Destination domain registered 6 days ago",
-      "Behavior occurred outside the agent's approved data flow policy",
+    id: 'ATI-2027-0042',
+    agentId: 'agent-sfdc-sync',
+    agentName: 'Salesforce Data Sync Agent',
+    agentType: 'Integration Agent',
+    tier: 'T3',
+    enforcement: 'Session Kill',
+    title: 'Mass export of CRM records to unverified endpoint',
+    summary: 'Bulk export of 42,318 contacts → external host registered 6 days ago.',
+    detectedAt: ago(2),
+    mttc: '1m 42s',
+    appsTouched: ['Salesforce', 'AWS S3'],
+    cloudPresence: ['AWS'],
+    changeManagement: { status: 'none' },
+    evidenceChain: [
+      {
+        statement: 'Bulk export volume is 38× the agent baseline.',
+        signal: 'Exported 42,318 Contact records (30-day baseline: ~1,100).',
+        policy: 'policy://ati/data-egress-volume/v2',
+        eventId: 'evt-9c01',
+      },
+      {
+        statement: 'Destination domain is not in the approved data-egress allow-list.',
+        signal: 'POST to api.unverified-host.io — domain registered 6 days ago.',
+        policy: 'policy://ati/egress-allowlist/v3',
+        eventId: 'evt-9c02',
+      },
+      {
+        statement: 'No active change-management record covers this export.',
+        signal: 'CR search for agent-sfdc-sync in the last 24h returned 0 records.',
+        policy: 'policy://ati/change-correlation/v1',
+        eventId: 'evt-9c03',
+      },
     ],
-    timestamp: ago(2),
-    apps: ["Salesforce", "AWS S3"],
-    recommendedAction: "terminate",
-    recommendationReason:
-      "High-volume exfiltration to an unverified destination meets the threshold for immediate session containment.",
-    verified: true,
-    telemetry: [
-      { ts: ago(2), event: "data.export.bulk", detail: "42,318 records, object=Contact" },
-      { ts: ago(2), event: "http.post", detail: "endpoint=api.unverified-host.io/ingest" },
-      { ts: ago(3), event: "auth.token.refresh", detail: "scope=read:all" },
+    timeline: [
+      { ts: ago(11), event: 'auth.session.start',  detail: 'svc-sfdc-sync from 10.42.4.18',       app: 'Okta' },
+      { ts: ago(9),  event: 'oauth.token.refresh', detail: 'scope=salesforce.read.bulk',          app: 'Salesforce' },
+      { ts: ago(6),  event: 'sql.query',           detail: 'SELECT Id, Email, Phone FROM Contact', app: 'Salesforce' },
+      { ts: ago(3),  event: 'data.export.bulk',    detail: '42,318 Contact records',              app: 'Salesforce' },
+      { ts: ago(2),  event: 'http.post',           detail: 'api.unverified-host.io/ingest',       app: 'egress' },
     ],
+    crossAppContext: [
+      {
+        app: 'AWS S3',
+        cloud: 'AWS',
+        event: 's3.bucket.list',
+        detail: 'No matching staging bucket — direct external POST',
+        ts: ago(2),
+      },
+    ],
+    identity: {
+      serviceAccount: 'svc-sfdc-sync@acme.okta.com',
+      tokenIssuer: 'Okta',
+      idp: 'Okta Workforce',
+      lastMfa: 'n/a (workload identity)',
+      authMethod: 'OAuth client credentials',
+    },
+    recommendationRationale:
+      'High-volume exfiltration to an unverified destination with no change-record correlation meets the threshold for immediate session containment.',
+    modelRunId: 'bold_beard-2026-05-15-run-37',
   },
+
   {
-    id: "AGT-1041",
-    agent: "Slack Triage Bot",
-    agentType: "Workflow Agent",
-    severity: "high",
-    confidence: 88,
-    title: "Cross-app access anomaly: 3 new apps in 2 minutes",
-    explanation:
-      "Agent acquired tokens for three applications outside its declared scope within a short window, including a financial system it has never accessed.",
-    reasons: [
-      "Accessed Snowflake, NetSuite, and Workday — none in approved scope",
-      "Token requests issued in rapid sequence (< 90s apart)",
-      "No corresponding user-driven trigger in upstream workflow",
+    id: 'ATI-2027-0041',
+    agentId: 'agent-slack-triage',
+    agentName: 'Slack Triage Bot',
+    agentType: 'Workflow Agent',
+    tier: 'T2',
+    enforcement: 'Restrict Scope',
+    title: 'Scope drift: 3 out-of-scope apps accessed in under 2 minutes',
+    summary: 'Agent acquired OAuth tokens for Snowflake, Workday, and NetSuite — none in its declared scope.',
+    detectedAt: ago(7),
+    mttc: '2m 11s',
+    appsTouched: ['Slack', 'Snowflake', 'Workday', 'NetSuite'],
+    cloudPresence: ['GCP'],
+    changeManagement: { status: 'none' },
+    evidenceChain: [
+      {
+        statement: 'Agent requested OAuth tokens for three applications outside its declared integration scope.',
+        signal: 'Token grants issued for Snowflake, Workday, NetSuite in a 90-second window; approved scope is Slack only.',
+        policy: 'policy://ati/oauth-scope-boundary/v2',
+        eventId: 'evt-8b01',
+      },
+      {
+        statement: 'Rapid sequential token acquisition pattern matches lateral-movement playbook.',
+        signal: '3 cross-app token grants in 88 seconds — inter-grant interval well below the 300-second baseline.',
+        policy: 'policy://ati/token-acquisition-rate/v1',
+        eventId: 'evt-8b02',
+      },
     ],
-    timestamp: ago(7),
-    apps: ["Slack", "Snowflake", "Workday", "NetSuite"],
-    recommendedAction: "restrict",
-    recommendationReason:
-      "Scope drift is significant but the agent supports active business workflows. Restrict to declared scope while preserving uptime.",
-    verified: true,
-    telemetry: [
-      { ts: ago(7), event: "oauth.token.grant", detail: "app=Snowflake" },
-      { ts: ago(8), event: "oauth.token.grant", detail: "app=Workday" },
-      { ts: ago(8), event: "oauth.token.grant", detail: "app=NetSuite" },
+    timeline: [
+      { ts: ago(9),  event: 'auth.session.start',  detail: 'svc-slack-triage from 10.11.2.5',  app: 'Okta' },
+      { ts: ago(8),  event: 'oauth.token.grant',   detail: 'app=Snowflake scope=data.read',    app: 'Okta' },
+      { ts: ago(8),  event: 'oauth.token.grant',   detail: 'app=Workday scope=hcm.read',       app: 'Okta' },
+      { ts: ago(7),  event: 'oauth.token.grant',   detail: 'app=NetSuite scope=financials.read', app: 'Okta' },
+      { ts: ago(7),  event: 'api.call',            detail: 'GET /api/v2/reports — Snowflake',  app: 'Snowflake' },
     ],
+    crossAppContext: [
+      {
+        app: 'BigQuery',
+        cloud: 'GCP',
+        event: 'bigquery.jobs.create',
+        detail: 'SELECT query targeting employee_compensation table — no prior activity from this agent',
+        ts: ago(7),
+      },
+    ],
+    identity: {
+      serviceAccount: 'svc-slack-triage@acme.okta.com',
+      tokenIssuer: 'Okta',
+      idp: 'Okta Workforce',
+      lastMfa: 'n/a (workload identity)',
+      authMethod: 'OAuth client credentials',
+    },
+    recommendationRationale:
+      'Significant scope drift across financial and HR systems. Restricting to declared Slack scope preserves workflow uptime while eliminating unauthorized cross-app access.',
+    modelRunId: 'bold_beard-2026-05-15-run-37',
   },
+
   {
-    id: "AGT-1040",
-    agent: "Finance Reconciliation Agent",
-    agentType: "Autonomous Agent",
-    severity: "high",
-    confidence: 81,
-    title: "Off-hours access to restricted GL accounts",
-    explanation:
-      "Agent queried general-ledger tables flagged as restricted at 03:14 UTC — well outside its operating window of 09:00–18:00 local.",
-    reasons: [
-      "Activity occurred 9 hours outside approved operating window",
-      "Queried 4 tables tagged 'restricted-financial'",
-      "No paired ticket or change request found",
+    id: 'ATI-2027-0040',
+    agentId: 'agent-fin-recon',
+    agentName: 'Finance Reconciliation Agent',
+    agentType: 'Autonomous Agent',
+    tier: 'T2',
+    enforcement: 'Restrict Scope',
+    title: 'Off-hours query of restricted GL tables at 03:14 UTC',
+    summary: 'Agent queried 4 restricted general-ledger tables 9 hours outside its approved operating window.',
+    detectedAt: ago(14),
+    mttc: '3m 05s',
+    appsTouched: ['NetSuite', 'Azure Synapse'],
+    cloudPresence: ['Azure'],
+    changeManagement: { status: 'none' },
+    evidenceChain: [
+      {
+        statement: 'Activity occurred outside the approved operating window of 09:00–18:00 local (UTC-8).',
+        signal: 'Session initiated at 03:14 UTC — 9 hours before the earliest approved start time.',
+        policy: 'policy://ati/operating-window/v1',
+        eventId: 'evt-7a01',
+      },
+      {
+        statement: 'Queries targeted tables classified as restricted-financial with elevated sensitivity.',
+        signal: 'SELECT executed on gl_journal_restricted, payroll_accruals, exec_comp_summary, and board_approvals — all tagged sensitivity=high.',
+        policy: 'policy://ati/data-classification-access/v2',
+        eventId: 'evt-7a02',
+      },
     ],
-    timestamp: ago(14),
-    apps: ["Snowflake", "NetSuite"],
-    recommendedAction: "restrict",
-    recommendationReason:
-      "Off-hours access to restricted data warrants scope reduction pending analyst review.",
-    verified: true,
-    telemetry: [
-      { ts: ago(14), event: "sql.query", detail: "SELECT * FROM gl_journal_restricted" },
-      { ts: ago(15), event: "session.start", detail: "ip=10.42.x.x, ua=agent-runtime/1.4" },
+    timeline: [
+      { ts: ago(17), event: 'auth.session.start',  detail: 'svc-fin-recon from 10.55.1.22 at 03:11 UTC',     app: 'Okta' },
+      { ts: ago(16), event: 'oauth.token.grant',   detail: 'scope=netsuite.financials.read',                  app: 'Okta' },
+      { ts: ago(15), event: 'sql.query',           detail: 'SELECT * FROM gl_journal_restricted',             app: 'NetSuite' },
+      { ts: ago(15), event: 'sql.query',           detail: 'SELECT * FROM exec_comp_summary',                app: 'NetSuite' },
+      { ts: ago(14), event: 'data.transfer',       detail: '14,892 rows → Azure Synapse workspace fin-analytics-prod', app: 'Azure Synapse' },
     ],
+    crossAppContext: [
+      {
+        app: 'Azure Synapse',
+        cloud: 'Azure',
+        event: 'synapse.pipeline.run',
+        detail: 'Pipeline fin-recon-nightly triggered outside scheduled window — no corresponding trigger config change',
+        ts: ago(14),
+      },
+    ],
+    identity: {
+      serviceAccount: 'svc-fin-recon@acme.okta.com',
+      tokenIssuer: 'Okta',
+      idp: 'Okta Workforce',
+      lastMfa: 'n/a (workload identity)',
+      authMethod: 'OAuth client credentials',
+    },
+    recommendationRationale:
+      'Off-hours access to restricted financial data with no associated change ticket warrants immediate scope restriction. The agent should be limited to read-only access on non-restricted tables pending analyst review.',
+    modelRunId: 'bold_beard-2026-05-15-run-37',
   },
+
   {
-    id: "AGT-1039",
-    agent: "Customer Support Copilot",
-    agentType: "LLM Agent",
-    severity: "medium",
-    confidence: 72,
-    title: "Unusual spike in API call volume",
-    explanation:
-      "Outbound API calls are at 14× baseline over the last 5 minutes. Pattern is consistent with retry storm but warrants verification.",
-    reasons: [
-      "Call rate exceeded 14× rolling baseline",
-      "85% of calls returned 4xx — possible misconfigured prompt loop",
-      "No correlated incident in upstream services",
+    id: 'ATI-2027-0039',
+    agentId: 'agent-support-copilot',
+    agentName: 'Customer Support Copilot',
+    agentType: 'LLM Agent',
+    tier: 'T1',
+    enforcement: 'Stall',
+    title: 'API call spike at 14× baseline with 85% 4xx error rate',
+    summary: 'Outbound API volume surged to 1,420 req/min during approved CHG-7781 maintenance window.',
+    detectedAt: ago(22),
+    mttc: '4m 33s',
+    appsTouched: ['Zendesk', 'Slack', 'AWS Lambda', 'GCP Pub/Sub'],
+    cloudPresence: ['AWS', 'GCP'],
+    changeManagement: { status: 'approved', ticket: 'CHG-7781' },
+    evidenceChain: [
+      {
+        statement: 'Outbound API call rate is 14× the 30-day rolling baseline.',
+        signal: '1,420 req/min observed; 30-day baseline is 100 req/min. Spike sustained for 6 minutes.',
+        policy: 'policy://ati/api-call-rate/v2',
+        eventId: 'evt-6f01',
+      },
+      {
+        statement: '85% of calls returned 4xx errors, consistent with a misconfigured prompt loop.',
+        signal: '1,207 of 1,420 requests in the measurement window returned HTTP 4xx on endpoint /tickets/search.',
+        policy: 'policy://ati/error-rate-anomaly/v1',
+        eventId: 'evt-6f02',
+      },
     ],
-    timestamp: ago(22),
-    apps: ["Zendesk", "Slack"],
-    recommendedAction: "stall",
-    recommendationReason:
-      "Pattern may be benign (retry loop). Stall pending quick analyst confirmation before scope changes.",
-    verified: true,
-    telemetry: [
-      { ts: ago(22), event: "api.rate", detail: "1,420 req/min (baseline 100/min)" },
-      { ts: ago(23), event: "api.error.4xx", detail: "85% error rate, ep=/tickets/search" },
+    timeline: [
+      { ts: ago(28), event: 'change.window.open',  detail: 'CHG-7781 maintenance window started',          app: 'ServiceNow' },
+      { ts: ago(25), event: 'auth.session.start',  detail: 'svc-support-copilot from 10.33.7.99',         app: 'Okta' },
+      { ts: ago(24), event: 'api.call.rate.spike', detail: '1,420 req/min — 14× baseline (100/min)',       app: 'Zendesk' },
+      { ts: ago(23), event: 'api.error.4xx',       detail: '85% error rate on /tickets/search',           app: 'Zendesk' },
+      { ts: ago(22), event: 'alert.triggered',     detail: 'ATI anomaly detector flagged call rate + error rate compound', app: 'Okta ATI' },
     ],
+    crossAppContext: [
+      {
+        app: 'GCP Pub/Sub',
+        cloud: 'GCP',
+        event: 'pubsub.message.publish',
+        detail: 'Retry queue backlog grew to 18,440 messages during spike — downstream consumers stalled',
+        ts: ago(22),
+      },
+    ],
+    identity: {
+      serviceAccount: 'svc-support-copilot@acme.okta.com',
+      tokenIssuer: 'Okta',
+      idp: 'Okta Workforce',
+      lastMfa: 'n/a (workload identity)',
+      authMethod: 'OAuth client credentials',
+    },
+    recommendationRationale:
+      'Spike correlates with CHG-7781 maintenance window — likely a misconfigured retry loop introduced during the change, not a security incident. Recommend Stall pending analyst confirmation before escalating scope changes.',
+    modelRunId: 'bold_beard-2026-05-15-run-37',
   },
+
   {
-    id: "AGT-1038",
-    agent: "Marketing Asset Indexer",
-    agentType: "Integration Agent",
-    severity: "medium",
-    confidence: 68,
-    title: "Read access to engineering Drive folders",
-    explanation:
-      "Agent traversed three Google Drive folders owned by Engineering, including one labeled 'roadmap-confidential'.",
-    reasons: [
-      "Folders not in agent's content allow-list",
-      "First-time access for these resources",
-      "Agent has read-only scope — no writes observed",
+    id: 'ATI-2027-0038',
+    agentId: 'agent-marketing-indexer',
+    agentName: 'Marketing Asset Indexer',
+    agentType: 'Integration Agent',
+    tier: 'T2',
+    enforcement: 'Restrict Scope',
+    title: 'Cross-department Drive traversal into roadmap-confidential folder',
+    summary: 'Agent indexed Engineering\'s Google Drive including the \'roadmap-confidential\' folder — outside its declared content scope.',
+    detectedAt: ago(38),
+    mttc: '2m 48s',
+    appsTouched: ['Google Drive', 'Azure AD'],
+    cloudPresence: ['Azure'],
+    changeManagement: { status: 'none' },
+    evidenceChain: [
+      {
+        statement: 'Agent accessed Google Drive folders not in its approved content allow-list.',
+        signal: 'drive.file.list and drive.file.read events recorded for 3 Engineering-owned folders, including roadmap-confidential — absent from the agent\'s content-scope policy.',
+        policy: 'policy://ati/content-scope-boundary/v2',
+        eventId: 'evt-5e01',
+      },
+      {
+        statement: 'First-ever access to Engineering Drive resources by this agent identity.',
+        signal: '0 prior events against Engineering folder hierarchy in 180-day audit window.',
+        policy: 'policy://ati/resource-novelty/v1',
+        eventId: 'evt-5e02',
+      },
     ],
-    timestamp: ago(38),
-    apps: ["Google Drive"],
-    recommendedAction: "restrict",
-    recommendationReason:
-      "Restrict folder scope. Read-only nature means no immediate exfiltration risk.",
-    verified: true,
-    telemetry: [
-      { ts: ago(38), event: "drive.file.list", detail: "folder=roadmap-confidential" },
-      { ts: ago(39), event: "drive.file.read", detail: "file=Q3-plan.gdoc" },
+    timeline: [
+      { ts: ago(42), event: 'auth.session.start',  detail: 'svc-marketing-indexer from 10.20.3.14',            app: 'Okta' },
+      { ts: ago(41), event: 'oauth.token.grant',   detail: 'scope=drive.readonly — Marketing folder baseline',  app: 'Okta' },
+      { ts: ago(40), event: 'drive.file.list',     detail: 'folder=roadmap-confidential (Engineering/Q3)',      app: 'Google Drive' },
+      { ts: ago(39), event: 'drive.file.read',     detail: 'file=Q3-plan.gdoc (sensitivity=confidential)',      app: 'Google Drive' },
+      { ts: ago(38), event: 'drive.file.read',     detail: 'file=competitive-analysis-2027.gdoc',              app: 'Google Drive' },
     ],
-  },
-  {
-    id: "AGT-1037",
-    agent: "DevOps Build Agent",
-    agentType: "CI/CD Agent",
-    severity: "critical",
-    confidence: 91,
-    title: "Privileged role assumed in production AWS account",
-    explanation:
-      "Agent assumed a role with PowerUser permissions in the production AWS account. Its standard role is read-only in staging.",
-    reasons: [
-      "AssumeRole call to prod-poweruser is not in approved policy",
-      "Source IP differs from declared CI runner range",
-      "No active deploy ticket in change-management system",
+    crossAppContext: [
+      {
+        app: 'Azure AD',
+        cloud: 'Azure',
+        event: 'auditLogs.directoryAudits',
+        detail: 'No group-membership change grants Engineering Drive access to svc-marketing-indexer — access path is unexplained',
+        ts: ago(38),
+      },
     ],
-    timestamp: ago(45),
-    apps: ["AWS", "GitHub"],
-    recommendedAction: "terminate",
-    recommendationReason:
-      "Privilege escalation to production with no change-record correlation. Immediate termination recommended.",
-    verified: true,
-    telemetry: [
-      { ts: ago(45), event: "aws.sts.assumeRole", detail: "arn:aws:iam::prod:role/PowerUser" },
-      { ts: ago(46), event: "session.ip", detail: "203.0.113.42 (outside CI range)" },
-    ],
-  },
-  {
-    id: "AGT-1036",
-    agent: "Calendar Scheduling Agent",
-    agentType: "Workflow Agent",
-    severity: "low",
-    confidence: 54,
-    title: "Slightly elevated meeting-creation rate",
-    explanation:
-      "Agent is creating events at ~2× its 7-day baseline. Pattern aligns with quarter-end planning cadence.",
-    reasons: [
-      "2× baseline (well below alerting threshold)",
-      "Pattern matches historical quarter-end activity",
-      "No scope or access changes detected",
-    ],
-    timestamp: ago(63),
-    apps: ["Google Calendar"],
-    recommendedAction: "stall",
-    recommendationReason:
-      "Low confidence — likely benign seasonal behavior. Surface for awareness; analyst review before any action.",
-    verified: false,
-    telemetry: [
-      { ts: ago(63), event: "calendar.event.create", detail: "rate=18/hr (baseline 9/hr)" },
-    ],
-  },
-  {
-    id: "AGT-1035",
-    agent: "HR Onboarding Agent",
-    agentType: "Autonomous Agent",
-    severity: "high",
-    confidence: 84,
-    title: "Bulk provisioning attempt outside change window",
-    explanation:
-      "Agent attempted to provision 28 user accounts across 6 SaaS apps in a 4-minute window, outside the approved Tuesday/Thursday change windows.",
-    reasons: [
-      "Provisioning volume 6× normal batch size",
-      "Activity outside approved change window",
-      "Includes admin-tier role assignments in 2 apps",
-    ],
-    timestamp: ago(78),
-    apps: ["Okta", "Salesforce", "Slack", "Google Workspace"],
-    recommendedAction: "restrict",
-    recommendationReason:
-      "Restrict admin-tier provisioning capability while allowing standard onboarding to continue.",
-    verified: true,
-    telemetry: [
-      { ts: ago(78), event: "scim.user.create", detail: "count=28, batch=onboard-2027-04" },
-      { ts: ago(79), event: "role.assign", detail: "role=app-admin, app=Salesforce" },
-    ],
-  },
-  {
-    id: "AGT-1034",
-    agent: "Data Lake ETL Agent",
-    agentType: "Integration Agent",
-    severity: "medium",
-    confidence: 76,
-    title: "New external destination in data pipeline",
-    explanation:
-      "ETL job added a new sink targeting a third-party analytics vendor not present in the data-sharing registry.",
-    reasons: [
-      "Destination domain not in approved vendor list",
-      "Pipeline modification not associated with change ticket",
-      "Data classification includes PII fields",
-    ],
-    timestamp: ago(102),
-    apps: ["Snowflake", "AWS S3"],
-    recommendedAction: "stall",
-    recommendationReason:
-      "Pause the pipeline pending vendor verification. No need to terminate the agent itself.",
-    verified: true,
-    telemetry: [
-      { ts: ago(102), event: "pipeline.sink.add", detail: "dest=analytics.thirdparty.com" },
-      { ts: ago(103), event: "schema.field", detail: "fields include email, phone (PII)" },
-    ],
-  },
-  {
-    id: "AGT-1033",
-    agent: "Security Scanning Agent",
-    agentType: "Autonomous Agent",
-    severity: "low",
-    confidence: 48,
-    title: "Minor latency anomaly in scan job",
-    explanation:
-      "Scan completion time drifted upward by ~15% over the last 6 runs. Possibly related to target inventory growth.",
-    reasons: [
-      "Latency increase is small and trending, not spiking",
-      "Target inventory grew 12% in same period",
-      "No errors or failed checks detected",
-    ],
-    timestamp: ago(140),
-    apps: ["AWS", "GitHub"],
-    recommendedAction: "stall",
-    recommendationReason:
-      "Confidence is low — likely a benign capacity issue. Flag for review, no automated action.",
-    verified: false,
-    telemetry: [
-      { ts: ago(140), event: "scan.complete", detail: "duration=14m12s (avg 12m18s)" },
-    ],
+    identity: {
+      serviceAccount: 'svc-marketing-indexer@acme.okta.com',
+      tokenIssuer: 'Okta',
+      idp: 'Okta Workforce',
+      lastMfa: 'n/a (workload identity)',
+      authMethod: 'OAuth client credentials',
+    },
+    recommendationRationale:
+      'Read-only access means no immediate exfiltration of writes, but the agent ingested confidential roadmap data outside its declared scope with no change record. Restrict folder scope to approved Marketing paths and initiate DLP review of indexed content.',
+    modelRunId: 'bold_beard-2026-05-15-run-37',
   },
 ];
