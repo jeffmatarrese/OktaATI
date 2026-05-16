@@ -18,7 +18,7 @@ export function LabDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(v) => (v ? openDrawer() : closeDrawer())}>
-      <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto" data-testid="lab-drawer">
+      <SheetContent side="left" className="w-full sm:max-w-3xl overflow-y-auto" data-testid="lab-drawer">
         <SheetHeader>
           <SheetTitle>Scenario Lab</SheetTitle>
           <SheetDescription>
