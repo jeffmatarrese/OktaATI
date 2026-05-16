@@ -34,9 +34,13 @@ export function RecommendedEnforcement({ recommended, rationale, actionTaken, on
   if (actionTaken) {
     return (
       <div className="space-y-2">
-        <div className={cn('flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium', BANNER_STYLE[actionTaken.enforcement])}>
-          <CheckCircle2 className="h-4 w-4" />
-          {PAST_VERB[actionTaken.enforcement]} · {formatDistanceToNow(new Date(actionTaken.takenAt))} ago
+        <div className={cn('flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-base font-semibold shadow-sm', BANNER_STYLE[actionTaken.enforcement])}>
+          <CheckCircle2 className="h-6 w-6 shrink-0" />
+          <div className="flex flex-1 flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Action taken</span>
+            <span className="text-lg leading-tight">{PAST_VERB[actionTaken.enforcement]}</span>
+          </div>
+          <span className="text-xs font-medium opacity-80">{formatDistanceToNow(new Date(actionTaken.takenAt))} ago</span>
         </div>
         <p className="text-xs text-muted-foreground">{rationale}</p>
         <button

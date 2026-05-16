@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScenarioPicker } from './ScenarioPicker';
 import { ClassifierResultPanel } from './ClassifierResultPanel';
@@ -8,6 +9,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function LabDrawer() {
   const { isOpen, phase, lastResult, openDrawer, closeDrawer, sendScenario } = useLabStore();
+  const navigate = useNavigate();
+
+  const handleSend = (id: string) => {
+    navigate('/');
+    void sendScenario(id);
+  };
 
   // Auto-close after a successful reveal so the alert lands visibly in the dashboard.
   useEffect(() => {
@@ -26,7 +33,7 @@ export function LabDrawer() {
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <ScenarioPicker onSend={(id) => void sendScenario(id)} disabled={phase === 'classifying'} />
+          <ScenarioPicker onSend={handleSend} disabled={phase === 'classifying'} />
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Classifier outputs

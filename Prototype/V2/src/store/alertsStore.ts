@@ -2,11 +2,20 @@ import { create } from 'zustand';
 import { seedAlerts, type Alert } from '@/data/alerts';
 import type { Enforcement } from '@/lib/tiers';
 
+export interface PendingDetection {
+  scenarioId: string;
+  title: string;
+  agentName: string;
+  startedAt: string;
+}
+
 interface AlertsState {
   alerts: Alert[];
+  pending: PendingDetection | null;
   appendAlert: (a: Alert) => void;
   clearFlash: (id: string) => void;
   applyAction: (id: string, enforcement: Exclude<Enforcement, 'None'>) => void;
+  setPending: (p: PendingDetection | null) => void;
   reset: () => Partial<AlertsState>;
 }
 
@@ -18,8 +27,10 @@ const actionVerb: Record<Exclude<Enforcement, 'None'>, string> = {
 
 export const useAlertsStore = create<AlertsState>((set) => ({
   alerts: [...seedAlerts],
+  pending: null,
   appendAlert: (a) =>
     set((s) => ({ alerts: [{ ...a, flash: true }, ...s.alerts] })),
+  setPending: (p) => set({ pending: p }),
   clearFlash: (id) =>
     set((s) => ({
       alerts: s.alerts.map((x) => (x.id === id ? { ...x, flash: false } : x)),
@@ -39,5 +50,5 @@ export const useAlertsStore = create<AlertsState>((set) => ({
         };
       }),
     })),
-  reset: () => ({ alerts: [...seedAlerts] }),
+  reset: () => ({ alerts: [...seedAlerts], pending: null }),
 }));

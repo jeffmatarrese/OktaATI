@@ -21,3 +21,7 @@ Eval/results/*.json
 Eval/results/*.md
 Eval/results/*.csv
 !Eval/results/.gitkeep
+
+# Claude / superpowers session artifacts
+/CLAUDE.md
+/docs/

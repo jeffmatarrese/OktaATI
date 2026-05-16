@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { LabDrawer } from './LabDrawer';
@@ -18,11 +18,16 @@ vi.mock('@/services/classifier', () => ({
 
 describe('LabDrawer send flow', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     useLabStore.setState({ isOpen: true, phase: 'idle', lastResult: null });
     useAlertsStore.setState(useAlertsStore.getState().reset());
   });
 
-  it('sending a scenario classifies → reveals → appends alert → closes drawer', async () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('sending a scenario classifies → reveals → pending row → alert pops → drawer closes', async () => {
     render(<MemoryRouter><LabDrawer /></MemoryRouter>);
 
     const firstScenario = labScenarios[0];
@@ -34,13 +39,16 @@ describe('LabDrawer send flow', () => {
 
     await waitFor(() => expect(useLabStore.getState().phase).toBe('revealed'));
 
-    // alert was appended at the front
-    expect(useAlertsStore.getState().alerts[0].id).toMatch(/^ATI-LAB-/);
+    // pending detection is set during the delay window
+    expect(useAlertsStore.getState().pending?.scenarioId).toBe(firstScenario.id);
 
-    // drawer auto-closes after 1500ms — wait for the real setTimeout to fire
-    await waitFor(
-      () => expect(useLabStore.getState().isOpen).toBe(false),
-      { timeout: 2500 },
-    );
+    // advance past both the detection delay (3.5s) and drawer auto-close (1.5s)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(useAlertsStore.getState().pending).toBeNull();
+    expect(useAlertsStore.getState().alerts[0].id).toMatch(/^ATI-LAB-/);
+    expect(useLabStore.getState().isOpen).toBe(false);
   });
 });
