@@ -20,14 +20,14 @@
     A prototype + eval for an <strong>Okta Identity Threat Protection</strong> feature that detects anomalies in AI agent behavioral telemetry and recommends tiered enforcement (Stall / Restrict Scope / Session Kill).
     <br />
     <br />
-    <a href="Reference/ATI_Eval_Framework.md"><strong>Read the spec »</strong></a>
+    <a href="SOURCE_OF_TRUTH.md"><strong>Source of truth »</strong></a>
     <br />
     <br />
     <a href="https://okta-ati.vercel.app">Live prototype</a>
     &middot;
     <a href="https://www.loom.com/share/ec80c7707a4b4f4ebeaf96b9aded1a00">Demo walkthrough (Loom)</a>
     &middot;
-    <a href="EVAL_WRITEUP.md">Eval results</a>
+    <a href="Eval/EVAL_WRITEUP.md">Eval results</a>
   </p>
 </div>
 
@@ -65,11 +65,14 @@
 
 ATI is a class project that prototypes an Okta Identity Threat Protection feature for AI agents. It pairs a working dashboard with a rigorous eval pipeline so the same telemetry stream that drives the UI is also benchmarked against a frozen scenario set.
 
-The project ships three things:
+[`SOURCE_OF_TRUTH.md`](SOURCE_OF_TRUTH.md) is the single-document spec for the project as a whole — problem framing, telemetry shape, scenario library, classifier and judge contracts, eval methodology, prototype architecture, and repo conventions. When in doubt, start there.
 
-1. **A prototype dashboard** — Okta-styled alerts UI with evidence-chain detail, an agents directory with Shadow-AI surfacing, and a Scenario Lab that replays real classifier outputs to inject alerts on demand.
-2. **An eval pipeline** — 50 frozen scenarios + 498 training scenarios scored by two classifiers (gpt-5.4-nano LLM and `bold_beard` AutoML soft-voting ensemble), both graded by an LLM-as-judge.
-3. **A spec** — [`Reference/ATI_Eval_Framework.md`](Reference/ATI_Eval_Framework.md) is the source of truth: telemetry schema, scenario library, grading rubric, classifier prompt, judge prompt.
+The project ships four deliverables:
+
+1. **Eval pipeline** ([`Eval/`](Eval/)) — LLM classifier (gpt-5.4-nano) + feature-based ML classifier (`bold_beard` AutoML), both graded by an LLM-as-judge over a frozen 50-scenario test set. Validates the eval methodology that would later grade a real ML classifier.
+2. **Prototype** ([`Prototype/V2/`](Prototype/V2/)) — operator-facing dashboard with alerts, agents directory, and a Scenario Lab that replays real classifier outputs.
+3. **Eval writeup** ([`Eval/EVAL_WRITEUP.md`](Eval/EVAL_WRITEUP.md)) — phase-by-phase results, methodology critique, and what a production version would need.
+4. **Source of truth** ([`SOURCE_OF_TRUTH.md`](SOURCE_OF_TRUTH.md)) — this is the master spec; the original framework doc ([`Reference/ATI_Eval_Framework.md`](Reference/ATI_Eval_Framework.md)) is the narrower eval-methodology spec that fed into it.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -89,15 +92,15 @@ The project ships three things:
 ### Repo layout
 
 ```
-Reference/        source-of-truth spec (telemetry schema, scenario library,
-                  grading rubric, classifier + judge prompts)
-Eval/             Python eval pipeline against Azure AI Foundry
-                  (gpt-5.4-nano LLM classifier + bold_beard AutoML model,
-                  both graded by gpt-5.4 as judge)
-Prototype/V1/     frozen "before" artifact — original Lovable-generated dashboard
-Prototype/V2/     active prototype (Vite + React + Tailwind + shadcn/ui)
-EVAL_WRITEUP.md   implementation-side companion to the Reference docs;
-                  maps what was built to the framework and reports results
+SOURCE_OF_TRUTH.md   master spec for the whole project — start here
+Reference/           supporting docs (eval framework, product brief,
+                     enforcement-tier design, PR/FAQ)
+Eval/                Python eval pipeline against Azure AI Foundry
+                     (gpt-5.4-nano LLM classifier + bold_beard AutoML model,
+                     both graded by gpt-5.4 as judge)
+  └─ EVAL_WRITEUP.md   phase-by-phase results, methodology critique, gaps
+Prototype/V1/        frozen "before" artifact — original Lovable-generated dashboard
+Prototype/V2/        active prototype (Vite + React + Tailwind + shadcn/ui)
 ```
 
 Each subproject is independent — there is no top-level build, test, or lint.
@@ -156,7 +159,7 @@ python -m src.run_eval             # full 50-scenario live run
 
 **Run the eval** — from `Eval/`, `python -m src.run_eval` produces a scorecard in `Eval/results/` (JSON + Markdown + CSV). Outputs are gitignored. See [`Eval/README.md`](Eval/README.md) for the full eval workflow and the additional `cross_check`, `generate_scenarios`, and `build_comparison` commands.
 
-**Read the eval writeup** — [`EVAL_WRITEUP.md`](EVAL_WRITEUP.md) is the implementation-side companion to the spec. It maps what was built to the framework and reports current head-to-head results across the two classifier generations.
+**Read the eval writeup** — [`Eval/EVAL_WRITEUP.md`](Eval/EVAL_WRITEUP.md) is the implementation-side companion to the spec. It maps what was built to the framework and reports current head-to-head results across the two classifier generations.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -169,7 +172,7 @@ python -m src.run_eval             # full 50-scenario live run
 - [x] **Phase 2** — feature-based `bold_beard` AutoML soft-voting ensemble (84% binary acc, 73% T1 recall, 60% T3 recall, 91% anomalous recall)
 - [x] **Phase 3** — Prototype V2 dashboard with evidence-chain detail, Scenario Lab, and end-to-end enforcement actions
 
-Full numbers and methodology in [`EVAL_WRITEUP.md`](EVAL_WRITEUP.md).
+Full numbers and methodology in [`Eval/EVAL_WRITEUP.md`](Eval/EVAL_WRITEUP.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -6,9 +6,8 @@
 - `Reference/ATI_Eval_Framework.md` — original framework spec (eval methodology, scenario taxonomy, rubric)
 - `Reference/Product Brief - Agentic Threat Intelligence.md` — product framing
 - `Reference/Okta ATI - Tiered Automated Enforcement Experiment.md` — enforcement-tier design
-- `Reference/prfaq-draft.md` — PR/FAQ
-- `EVAL_WRITEUP.md` — implementation-side companion: results, gap analysis, open work
-- `CLAUDE.md` — agent guidance for working in the repo
+- `Reference/prfaq-final.md` — PR/FAQ + Appendix
+- `Eval/EVAL_WRITEUP.md` — implementation-side companion: results, gap analysis, open work
 - `docs/superpowers/specs/2026-05-16-prototype-v2-design.md` — Prototype V2 design spec
 - `docs/superpowers/plans/2026-05-16-prototype-v2.md` — Prototype V2 implementation plan
 
@@ -32,8 +31,8 @@ Agents act in dense bursts across many apps and APIs, often with broad scopes an
 
 1. **Eval pipeline** (`Eval/`) — LLM classifier + feature-based ML classifier, both graded by an LLM-as-judge over a frozen 50-scenario test set. Validates the eval methodology that would later grade a real ML classifier.
 2. **Prototype** (`Prototype/V2/`) — operator-facing dashboard showing alerts, agents, and a "Scenario Lab" that replays real classifier outputs.
-3. **Writeup** (`EVAL_WRITEUP.md`) — phase-by-phase results, methodology critique, and what a production version would need.
-4. **This document** — single-file source of truth for grading and AI-agent handoff.
+3. **Eval writeup** (`Eval/EVAL_WRITEUP.md`) — phase-by-phase results, methodology critique, and what a production version would need.
+4. **This document** — single-file source of truth for AI-agent handoff.
 
 ### 1.4 Non-goals
 
@@ -302,7 +301,7 @@ Head-to-head: `Eval/results/automl/comparison.md` (regenerate with `python -m sr
 
 ### 8.4 Full writeup
 
-`EVAL_WRITEUP.md` — implementation-side companion. May be stale on the "active next workstream" line (Phase 3 is complete); §1–§4 are current.
+`Eval/EVAL_WRITEUP.md` — implementation-side companion. May be stale on the "active next workstream" line (Phase 3 is complete); §1–§4 are current.
 
 ---
 
@@ -310,11 +309,12 @@ Head-to-head: `Eval/results/automl/comparison.md` (regenerate with `python -m sr
 
 ### 9.1 Goals and V1→V2 rationale
 
-V1 (`Prototype/V1/`, frozen) was a Lovable-generated dashboard authored by a classmate. V2 was rebuilt to address three V1 weaknesses:
+V1 (`Prototype/V1/`, frozen) was a Lovable-generated dashboard. V2 was rebuilt to address three V1 weaknesses:
 
 1. **Visual identity** — V2 uses Okta's blue/charcoal palette, not generic Tailwind.
 2. **Information architecture** — agent-first navigation. Agents and Alerts are co-equal surfaces, not nested.
 3. **Operator UX** — alert detail uses a deterministic **evidence chain** instead of probability bars. See §9.4 for the rule and rationale.
+4. **Scenario Lab** - added the scenario lab which simulates how eval-set scenarios would flow through the ML model and app surface.
 
 **Source files:** `docs/superpowers/specs/2026-05-16-prototype-v2-design.md`, `docs/superpowers/plans/2026-05-16-prototype-v2.md`
 
@@ -435,15 +435,11 @@ These were set deliberately. If you see them missing, do not "restore" the older
 
 **Source files:** `Eval/src/llm_client.py`, `Eval/src/config.py`
 
-### 11.5 No `Co-Authored-By: Claude` commit trailer
-
-User preference. Never add it to commits authored by Claude Code. This rule propagates to any dispatched subagent.
-
-### 11.6 Synthetic data framing
+### 11.5 Synthetic data framing
 
 `Eval/src/generate_scenarios.py` and the 298 synthetic training scenarios are a **class-project stopgap** because we have no SME panel and no real telemetry. The production recommendation (§10) is expert-labeled real data. Do **not** reframe synthetic generation as the recommended approach in any writeup.
 
-### 11.7 Prototype probability rule
+### 11.6 Prototype probability rule
 
 See §9.4. Probabilities live in the Scenario Lab only.
 
@@ -454,8 +450,7 @@ See §9.4. Probabilities live in the Scenario Lab only.
 ```
 OktaATI/
 ├── SOURCE_OF_TRUTH.md          ← this file
-├── CLAUDE.md                   ← agent guidance
-├── EVAL_WRITEUP.md             ← implementation-side companion (results, open work)
+├── Eval/EVAL_WRITEUP.md         ← implementation-side companion (results, open work)
 ├── README.md                   ← top-level orientation
 │
 ├── Reference/                  ← authoritative spec docs (do not modify lightly)
