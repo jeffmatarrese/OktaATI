@@ -18,11 +18,16 @@ export function ClassifierResultPanel({ result, groundTruth }: Props) {
         <div className="text-sm font-semibold">{display.name}</div>
       </header>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center gap-2">
         <span className={cn('rounded-md border px-2 py-1 text-xs font-medium', tierColorClass(result.predicted))}>
           Predicted: {tierLabel(result.predicted)}
         </span>
-        <span className={cn('flex items-center gap-1 text-xs', correct ? 'text-emerald-700' : 'text-red-700')}>
+        {!correct && (
+          <span className={cn('rounded-md border px-2 py-1 text-xs font-medium', tierColorClass(groundTruth))}>
+            Expected: {tierLabel(groundTruth)}
+          </span>
+        )}
+        <span className={cn('ml-auto flex items-center gap-1 text-xs', correct ? 'text-emerald-700' : 'text-red-700')}>
           {correct ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
           {correct ? 'Correct' : 'Incorrect'}
         </span>

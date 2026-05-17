@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 import { ScenarioPicker } from './ScenarioPicker';
 import { ClassifierResultPanel } from './ClassifierResultPanel';
 import { useLabStore } from '@/store/labStore';
@@ -8,7 +9,7 @@ import { labScenarios } from '@/data/scenarios';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function LabDrawer() {
-  const { isOpen, phase, lastResult, openDrawer, closeDrawer, sendScenario } = useLabStore();
+  const { isOpen, phase, lastResult, openDrawer, closeDrawer, sendScenario, commitLastResult } = useLabStore();
   const navigate = useNavigate();
 
   const handleSend = (id: string) => {
@@ -16,12 +17,11 @@ export function LabDrawer() {
     void sendScenario(id);
   };
 
-  // Auto-close after a successful reveal so the alert lands visibly in the dashboard.
-  useEffect(() => {
-    if (phase !== 'revealed') return;
-    const t = setTimeout(() => closeDrawer(), 1500);
-    return () => clearTimeout(t);
-  }, [phase, closeDrawer]);
+  const handleGoToAlerts = () => {
+    navigate('/');
+    closeDrawer();
+    commitLastResult();
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={(v) => (v ? openDrawer() : closeDrawer())}>
@@ -60,6 +60,14 @@ export function LabDrawer() {
                     <div className="mb-1 font-semibold">Ground-truth rationale</div>
                     <p className="text-muted-foreground">{sc.groundTruthRationale}</p>
                   </div>
+                  <Button
+                    onClick={handleGoToAlerts}
+                    className="mt-2 w-full gap-1.5"
+                    data-testid="lab-go-to-alerts"
+                  >
+                    Go to alerts dashboard
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </>
               );
             })()}

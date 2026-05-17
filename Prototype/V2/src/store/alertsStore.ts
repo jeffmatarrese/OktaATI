@@ -15,6 +15,7 @@ interface AlertsState {
   appendAlert: (a: Alert) => void;
   clearFlash: (id: string) => void;
   applyAction: (id: string, enforcement: Exclude<Enforcement, 'None'>) => void;
+  dismissAlert: (id: string) => void;
   setPending: (p: PendingDetection | null) => void;
   reset: () => Partial<AlertsState>;
 }
@@ -46,6 +47,21 @@ export const useAlertsStore = create<AlertsState>((set) => ({
           timeline: [
             ...x.timeline,
             { ts: takenAt, event: 'enforcement.applied', detail: actionVerb[enforcement], app: 'ATI' },
+          ],
+        };
+      }),
+    })),
+  dismissAlert: (id) =>
+    set((s) => ({
+      alerts: s.alerts.map((x) => {
+        if (x.id !== id) return x;
+        const dismissedAt = new Date().toISOString();
+        return {
+          ...x,
+          dismissedAt,
+          timeline: [
+            ...x.timeline,
+            { ts: dismissedAt, event: 'alert.dismissed', detail: 'Dismissed by analyst (false positive)', app: 'ATI' },
           ],
         };
       }),

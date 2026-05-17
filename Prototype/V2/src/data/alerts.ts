@@ -64,6 +64,7 @@ export interface Alert {
   modelRunId: string;
   flash?: boolean;
   actionTaken?: ActionTaken;
+  dismissedAt?: string; // analyst marked this as a false positive / not actionable
 }
 
 const now = Date.now();

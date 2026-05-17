@@ -37,7 +37,7 @@ describe('labStore', () => {
     expect(useLabStore.getState().isOpen).toBe(true);
   });
 
-  it('sendScenario classifies both models, appends an alert at the front, and ends in revealed', async () => {
+  it('sendScenario classifies both models and ends in revealed WITHOUT touching the dashboard', async () => {
     const before = useAlertsStore.getState().alerts.length;
     const p = useLabStore.getState().sendScenario('T2-04');
     await vi.runAllTimersAsync();
@@ -46,22 +46,28 @@ describe('labStore', () => {
     expect(state.phase).toBe('revealed');
     expect(state.lastResult?.ml.predicted).toBe('T2');
     expect(state.lastResult?.nano.predicted).toBe('T1');
-    expect(useAlertsStore.getState().alerts.length).toBe(before + 1);
-    expect(useAlertsStore.getState().alerts[0].tier).toBe('T2');
-    expect(useAlertsStore.getState().alerts[0].flash).toBe(true);
+    // No pending row, no alert appended — that waits for commitLastResult.
     expect(useAlertsStore.getState().pending).toBeNull();
+    expect(useAlertsStore.getState().alerts.length).toBe(before);
   });
 
-  it('sendScenario sets pending during classifying and clears it after the detection delay', async () => {
+  it('commitLastResult sets pending immediately and appends the alert after the commit delay', async () => {
+    const before = useAlertsStore.getState().alerts.length;
     const p = useLabStore.getState().sendScenario('T2-04');
-    // pending set synchronously before any awaits
-    expect(useAlertsStore.getState().pending?.scenarioId).toBe('T2-04');
     await vi.runAllTimersAsync();
     await p;
+
+    useLabStore.getState().commitLastResult();
+    expect(useAlertsStore.getState().pending?.scenarioId).toBe('T2-04');
+    expect(useAlertsStore.getState().alerts.length).toBe(before); // not yet appended
+
+    await vi.runAllTimersAsync();
     expect(useAlertsStore.getState().pending).toBeNull();
+    expect(useAlertsStore.getState().alerts.length).toBe(before + 1);
+    expect(useAlertsStore.getState().alerts[0].tier).toBe('T2');
   });
 
-  it('sendScenario does NOT append an alert when ML predicts Normal but still clears pending', async () => {
+  it('commitLastResult on a Normal prediction clears pending and appends nothing', async () => {
     const { classifier } = await import('@/services/classifier');
     (classifier.classify as ReturnType<typeof vi.fn>).mockImplementationOnce(async (sid: string) => ({
       model: 'bold_beard', scenarioId: sid, predicted: 'Normal',
@@ -71,6 +77,9 @@ describe('labStore', () => {
     const p = useLabStore.getState().sendScenario('N-01');
     await vi.runAllTimersAsync();
     await p;
+
+    useLabStore.getState().commitLastResult();
+    await vi.runAllTimersAsync();
     expect(useAlertsStore.getState().alerts.length).toBe(before);
     expect(useAlertsStore.getState().pending).toBeNull();
   });

@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Shell } from '@/components/Shell/Shell';
 import Alerts from '@/pages/Alerts';
 import Agents from '@/pages/Agents';
-import ScenarioLabPage from '@/pages/ScenarioLabPage';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 
@@ -22,7 +21,6 @@ const App = () => (
           <Route element={<Shell />}>
             <Route path="/" element={<Alerts />} />
             <Route path="/agents" element={<Agents />} />
-            <Route path="/lab" element={<ScenarioLabPage />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

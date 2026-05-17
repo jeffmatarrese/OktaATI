@@ -1,6 +1,6 @@
 # Agentic Threat Intelligence — Project Writeup
 
-Matarrese | May 12, 2026
+Matarrese & O'Quinn | May 12, 2026
 
 This is the implementation-side companion to the design docs in `Reference/`. The framework spec (`Reference/ATI_Eval_Framework.md`) and the pre-evaluation writeup (`Reference/Okta ATI - Anomaly detection and response model eval.md`) establish the thesis, the schema, the scoring rubric, and the production-quality bar. This document reports what was built against that spec, what the results say, and where the prototype falls short of the production target on purpose.
 

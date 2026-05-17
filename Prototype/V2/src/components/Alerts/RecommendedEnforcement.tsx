@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { CircleStop, ShieldAlert, Pause, CheckCircle2 } from 'lucide-react';
+import { CircleStop, ShieldAlert, Pause, CheckCircle2, EyeOff } from 'lucide-react';
 import type { Enforcement } from '@/lib/tiers';
 import type { ActionTaken } from '@/data/alerts';
 import { formatDistanceToNow } from 'date-fns';
@@ -20,10 +20,12 @@ interface Props {
   recommended: Enforcement;
   rationale: string;
   actionTaken?: ActionTaken;
+  dismissedAt?: string;
   onAction: (e: Exclude<Enforcement, 'None'>) => void;
+  onDismiss: () => void;
 }
 
-export function RecommendedEnforcement({ recommended, rationale, actionTaken, onAction }: Props) {
+export function RecommendedEnforcement({ recommended, rationale, actionTaken, dismissedAt, onAction, onDismiss }: Props) {
   if (actionTaken) {
     return (
       <div className="space-y-2">
@@ -40,8 +42,6 @@ export function RecommendedEnforcement({ recommended, rationale, actionTaken, on
           type="button"
           className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           onClick={() => {
-            // Escalation path: clicking the banner-area "Change action" lets the analyst
-            // pick a different enforcement. Cycle to the most-severe remaining option.
             const next: Exclude<Enforcement, 'None'> =
               actionTaken.enforcement === 'Stall' ? 'Restrict Scope'
               : actionTaken.enforcement === 'Restrict Scope' ? 'Session Kill'
@@ -51,6 +51,21 @@ export function RecommendedEnforcement({ recommended, rationale, actionTaken, on
         >
           Change action → {actionTaken.enforcement === 'Stall' ? 'Restrict Scope' : actionTaken.enforcement === 'Restrict Scope' ? 'Session Kill' : 'Stall'}
         </button>
+      </div>
+    );
+  }
+  if (dismissedAt) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-3 rounded-md border bg-muted/40 px-3 py-2">
+          <EyeOff className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <div className="flex flex-1 flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Dismissed</span>
+            <span className="text-sm font-medium text-foreground">Marked as false positive</span>
+          </div>
+          <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(dismissedAt))} ago</span>
+        </div>
+        <p className="text-xs text-muted-foreground">{rationale}</p>
       </div>
     );
   }
@@ -69,6 +84,16 @@ export function RecommendedEnforcement({ recommended, rationale, actionTaken, on
             {e === recommended && <span className="ml-1 text-[10px] uppercase opacity-75">Recommended</span>}
           </Button>
         ))}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="gap-1.5 text-muted-foreground hover:text-foreground"
+          onClick={onDismiss}
+        >
+          <EyeOff className="h-3.5 w-3.5" />
+          Ignore
+          <span className="text-[10px] uppercase opacity-75">False positive</span>
+        </Button>
       </div>
       <p className="text-xs text-muted-foreground">{rationale}</p>
     </div>

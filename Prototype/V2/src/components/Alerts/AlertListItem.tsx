@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2, EyeOff, Sparkles } from 'lucide-react';
 import type { Alert } from '@/data/alerts';
 import type { Enforcement, Tier } from '@/lib/tiers';
 import { TierBadge } from './TierBadge';
@@ -25,6 +25,8 @@ interface Props {
 
 export function AlertListItem({ alert, selected, onSelect }: Props) {
   const action = alert.actionTaken;
+  const dismissed = alert.dismissedAt;
+  const resolved = action || dismissed;
   const tier = alert.tier as Exclude<Tier, 'Normal'>;
   return (
     <button
@@ -33,15 +35,15 @@ export function AlertListItem({ alert, selected, onSelect }: Props) {
       onClick={() => onSelect(alert.id)}
       className={cn(
         'flex w-full flex-col gap-1 overflow-hidden rounded-md border bg-card px-3 py-2 text-left transition-colors hover:bg-accent/30',
-        !action && cn('border-l-4', TRIAGE_BORDER[tier]),
-        action && 'bg-muted/40 text-muted-foreground',
+        !resolved && cn('border-l-4', TRIAGE_BORDER[tier]),
+        resolved && 'bg-muted/40 text-muted-foreground',
         selected && 'border-primary bg-primary/5',
         alert.flash && 'border-primary ring-2 ring-primary/70 shadow-[0_0_0_4px_hsl(var(--primary)/0.15)] animate-in slide-in-from-top-4 fade-in-0 ease-out duration-1000',
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className={cn('truncate text-sm font-medium', !action && 'text-foreground')}>
+          <span className={cn('truncate text-sm font-medium', !resolved && 'text-foreground')}>
             {alert.agentName}
           </span>
           {alert.flash && (
@@ -60,6 +62,12 @@ export function AlertListItem({ alert, selected, onSelect }: Props) {
             <CheckCircle2 className="h-3 w-3 text-emerald-600" />
             <span className="font-medium text-emerald-700">{ACTION_PAST[action.enforcement]}</span>
             <span>· {formatDistanceToNow(new Date(action.takenAt))} ago</span>
+          </>
+        ) : dismissed ? (
+          <>
+            <EyeOff className="h-3 w-3" />
+            <span className="font-medium">Dismissed</span>
+            <span>· {formatDistanceToNow(new Date(dismissed))} ago</span>
           </>
         ) : (
           <span>{formatDistanceToNow(new Date(alert.detectedAt))} ago</span>

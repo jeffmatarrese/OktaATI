@@ -20,6 +20,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function AlertDetail({ alert }: { alert: Alert }) {
   const applyAction = useAlertsStore((s) => s.applyAction);
+  const dismissAlert = useAlertsStore((s) => s.dismissAlert);
   return (
     <article className="flex flex-col gap-6 p-6">
       <header className="space-y-2">
@@ -40,7 +41,9 @@ export function AlertDetail({ alert }: { alert: Alert }) {
           recommended={alert.enforcement}
           rationale={alert.recommendationRationale}
           actionTaken={alert.actionTaken}
+          dismissedAt={alert.dismissedAt}
           onAction={(e) => applyAction(alert.id, e)}
+          onDismiss={() => dismissAlert(alert.id)}
         />
       </header>
 

@@ -27,28 +27,33 @@ describe('LabDrawer send flow', () => {
     vi.useRealTimers();
   });
 
-  it('sending a scenario classifies → reveals → pending row → alert pops → drawer closes', async () => {
+  it('Send classifies into the drawer; the dashboard only populates after Go to alerts', async () => {
     render(<MemoryRouter><LabDrawer /></MemoryRouter>);
 
     const firstScenario = labScenarios[0];
     const card = screen.getByTestId(`lab-scenario-${firstScenario.id}`);
-    // grab the Send button specifically — it's the last button inside the card
     const buttons = card.querySelectorAll('button');
     const send = buttons[buttons.length - 1] as HTMLButtonElement;
+    const beforeAlertCount = useAlertsStore.getState().alerts.length;
     fireEvent.click(send);
 
     await waitFor(() => expect(useLabStore.getState().phase).toBe('revealed'));
 
-    // pending detection is set during the delay window
+    // Drawer shows results — but no pending row, no alert in the dashboard yet.
+    expect(useAlertsStore.getState().pending).toBeNull();
+    expect(useAlertsStore.getState().alerts.length).toBe(beforeAlertCount);
+    expect(useLabStore.getState().isOpen).toBe(true);
+
+    fireEvent.click(screen.getByTestId('lab-go-to-alerts'));
+    // Drawer closes; pending row is set immediately.
+    expect(useLabStore.getState().isOpen).toBe(false);
     expect(useAlertsStore.getState().pending?.scenarioId).toBe(firstScenario.id);
 
-    // advance past both the detection delay (3.5s) and drawer auto-close (1.5s)
+    // Advance past the commit delay; the alert lands in the dashboard.
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(5000);
+      await vi.advanceTimersByTimeAsync(2000);
     });
-
     expect(useAlertsStore.getState().pending).toBeNull();
     expect(useAlertsStore.getState().alerts[0].id).toMatch(/^ATI-LAB-/);
-    expect(useLabStore.getState().isOpen).toBe(false);
   });
 });

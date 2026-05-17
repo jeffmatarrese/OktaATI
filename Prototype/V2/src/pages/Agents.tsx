@@ -1,15 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { seedAgents } from '@/data/agents';
 import { AgentDirectory } from '@/components/Agents/AgentDirectory';
+import { AgentKpis } from '@/components/Agents/AgentKpis';
 import { ShadowAiToggle } from '@/components/Agents/ShadowAiToggle';
 import { AgentDetailDrawer } from '@/components/Agents/AgentDetailDrawer';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZE = 10;
 
 export default function Agents() {
   const [shadowOnly, setShadowOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -19,6 +24,14 @@ export default function Agents() {
       return true;
     });
   }, [shadowOnly, query]);
+
+  // Snap back to page 1 whenever the filter set changes.
+  useEffect(() => { setPage(1); }, [shadowOnly, query]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visible = filtered.slice(start, start + PAGE_SIZE);
 
   const open = openId !== null;
   const agent = seedAgents.find((a) => a.id === openId) ?? null;
@@ -40,9 +53,49 @@ export default function Agents() {
           </div>
         </div>
       </header>
-      <div className="overflow-x-auto rounded-md border bg-card">
-        <AgentDirectory agents={filtered} onOpen={setOpenId} />
+
+      <div className="mb-4">
+        <AgentKpis agents={filtered} />
       </div>
+
+      <div className="overflow-x-auto rounded-md border bg-card">
+        <AgentDirectory agents={visible} onOpen={setOpenId} />
+      </div>
+
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-xs text-muted-foreground">
+          {filtered.length === 0
+            ? 'No agents match the current filter.'
+            : <>Showing <span className="font-medium text-foreground">{start + 1}</span>–<span className="font-medium text-foreground">{Math.min(start + PAGE_SIZE, filtered.length)}</span> of <span className="font-medium text-foreground">{filtered.length}</span></>
+          }
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={safePage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Prev
+          </Button>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            Page {safePage} of {pageCount}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            disabled={safePage >= pageCount}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       <AgentDetailDrawer agent={agent} open={open} onOpenChange={(v) => !v && setOpenId(null)} />
     </div>
   );

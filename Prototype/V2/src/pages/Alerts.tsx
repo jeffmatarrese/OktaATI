@@ -8,12 +8,13 @@ import { Search, ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-type ActionFilter = 'all' | 'needs-action' | 'action-taken';
+type ActionFilter = 'all' | 'needs-action' | 'action-taken' | 'dismissed';
 
 const FILTERS: { id: ActionFilter; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'needs-action', label: 'Needs action' },
   { id: 'action-taken', label: 'Action taken' },
+  { id: 'dismissed', label: 'Dismissed' },
 ];
 
 export default function Alerts() {
@@ -23,20 +24,22 @@ export default function Alerts() {
   const [selectedId, setSelectedId] = useState<string | null>(alerts[0]?.id ?? null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ActionFilter>('all');
-  const [takenOpen, setTakenOpen] = useState(false);
+  const [takenOpen, setTakenOpen] = useState(true);
+  const [dismissedOpen, setDismissedOpen] = useState(true);
   // On mobile (< lg) we render either the list or the detail. Desktop shows both.
   const [mobileDetail, setMobileDetail] = useState(false);
-  // Alerts that just transitioned to actionTaken — kept in the needs-action
-  // section briefly so the row can animate out instead of vanishing.
+  // Alerts that just transitioned out of needs-action (action taken OR dismissed)
+  // — kept in the needs-action section briefly so the row can animate out.
   const [resolving, setResolving] = useState<Set<string>>(new Set());
-  const prevHadAction = useRef<Map<string, boolean>>(new Map());
+  const prevResolved = useRef<Map<string, boolean>>(new Map());
 
   useEffect(() => {
     const newlyResolved: string[] = [];
     alerts.forEach((a) => {
-      const had = prevHadAction.current.get(a.id) ?? false;
-      if (a.actionTaken && !had) newlyResolved.push(a.id);
-      prevHadAction.current.set(a.id, !!a.actionTaken);
+      const wasResolved = prevResolved.current.get(a.id) ?? false;
+      const isResolved = !!a.actionTaken || !!a.dismissedAt;
+      if (isResolved && !wasResolved) newlyResolved.push(a.id);
+      prevResolved.current.set(a.id, isResolved);
     });
     if (newlyResolved.length === 0) return;
     setResolving((prev) => {
@@ -52,7 +55,7 @@ export default function Alerts() {
           next.delete(id);
           return next;
         });
-      }, 900),
+      }, 520),
     );
     return () => { timers.forEach(clearTimeout); };
   }, [alerts]);
@@ -84,20 +87,30 @@ export default function Alerts() {
 
   // Alerts mid-resolution stay in the needs-action list so they can animate out.
   const needsAction = useMemo(
-    () => searched.filter((a) => !a.actionTaken || resolving.has(a.id)),
+    () => searched.filter((a) => (!a.actionTaken && !a.dismissedAt) || resolving.has(a.id)),
     [searched, resolving],
   );
   const actionTaken = useMemo(
     () => searched.filter((a) => a.actionTaken && !resolving.has(a.id)),
     [searched, resolving],
   );
+  const dismissed = useMemo(
+    () => searched.filter((a) => a.dismissedAt && !a.actionTaken && !resolving.has(a.id)),
+    [searched, resolving],
+  );
 
-  const counts = { all: searched.length, 'needs-action': needsAction.length, 'action-taken': actionTaken.length };
+  const counts = {
+    all: searched.length,
+    'needs-action': needsAction.length,
+    'action-taken': actionTaken.length,
+    dismissed: dismissed.length,
+  };
 
   const selected = alerts.find((a) => a.id === selectedId) ?? null;
 
   const showNeeds = filter === 'all' || filter === 'needs-action';
   const showTaken = filter === 'all' || filter === 'action-taken';
+  const showDismissed = filter === 'all' || filter === 'dismissed';
 
   return (
     <div className="grid h-full grid-cols-1 gap-0 overflow-hidden lg:grid-cols-2">
@@ -147,28 +160,33 @@ export default function Alerts() {
               {needsAction.length === 0 && filter !== 'all' && (
                 <EmptySection label="No alerts need action." />
               )}
-              {needsAction.map((a) => (
-                <div
-                  key={a.id}
-                  className={cn(
-                    'overflow-hidden transition-all duration-700 ease-in',
-                    resolving.has(a.id)
-                      ? 'max-h-0 -translate-x-2 opacity-0'
-                      : 'max-h-40 translate-x-0 opacity-100',
-                  )}
-                >
-                  <AlertListItem
-                    alert={a}
-                    selected={a.id === selectedId}
-                    onSelect={handleSelect}
-                  />
-                </div>
-              ))}
+              {needsAction.map((a) => {
+                const isResolving = resolving.has(a.id);
+                return (
+                  <div
+                    key={a.id}
+                    className={cn(
+                      'grid transition-[grid-template-rows,opacity,transform,margin] duration-500 ease-out',
+                      isResolving
+                        ? 'grid-rows-[0fr] -mt-2 -translate-x-1 opacity-0'
+                        : 'grid-rows-[1fr] mt-0 translate-x-0 opacity-100',
+                    )}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <AlertListItem
+                        alert={a}
+                        selected={a.id === selectedId}
+                        onSelect={handleSelect}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {showTaken && (
-            <div className={cn('flex flex-col gap-2', filter === 'all' && 'mt-6')}>
+            <div className={cn('flex flex-col gap-2', filter === 'all' && 'mt-10')}>
               {filter === 'all' ? (
                 <button
                   type="button"
@@ -185,6 +203,34 @@ export default function Alerts() {
                 <EmptySection label="No actions taken yet." />
               ) : null}
               {(filter !== 'all' || takenOpen) && actionTaken.map((a) => (
+                <AlertListItem
+                  key={a.id}
+                  alert={a}
+                  selected={a.id === selectedId}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          )}
+
+          {showDismissed && (
+            <div className={cn('flex flex-col gap-2', filter === 'all' && 'mt-10')}>
+              {filter === 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => setDismissedOpen((v) => !v)}
+                  className="flex items-center gap-2 rounded-md py-1 text-left hover:bg-accent/30"
+                  aria-expanded={dismissedOpen}
+                >
+                  {dismissedOpen ? <ChevronDown className="h-3 w-3 text-muted-foreground" /> : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                  <h3 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Dismissed</h3>
+                  <span className="rounded-full bg-muted px-1.5 py-0 text-[10px] text-muted-foreground">{dismissed.length}</span>
+                  <div className="ml-1 h-px flex-1 bg-border" />
+                </button>
+              ) : dismissed.length === 0 ? (
+                <EmptySection label="No dismissed alerts." />
+              ) : null}
+              {(filter !== 'all' || dismissedOpen) && dismissed.map((a) => (
                 <AlertListItem
                   key={a.id}
                   alert={a}

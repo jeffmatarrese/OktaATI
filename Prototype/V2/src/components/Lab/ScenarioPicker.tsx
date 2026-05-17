@@ -37,7 +37,7 @@ function Card({ s, revealed, onToggle, onSend, disabled }: {
     <div className="flex flex-col gap-2 rounded-lg border bg-card p-3" data-testid={`lab-scenario-${s.id}`}>
       <div className="flex items-baseline justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.difficulty} · {s.id}</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.id}</div>
           <div className="truncate text-sm font-medium">{s.title}</div>
         </div>
         <button
